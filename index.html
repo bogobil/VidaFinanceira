@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Controle Meu Bolso - Dashboard</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header>
+    <div class="container">
+      <h1>Controle Meu Bolso</h1>
+      <nav>
+        <ul>
+          <li><a href="index.html" class="active">Dashboard</a></li>
+          <li><a href="lancamentos.html">Lançamentos</a></li>
+          <li><a href="quitacoes.html">Quitações</a></li>
+          <li><a href="usuarios.html">Usuários</a></li>
+          <li><a href="cartoes.html">Cartões</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <h2>Dashboard Financeiro</h2>
+    
+    <div class="dashboard">
+      <div class="dashboard-card">
+        <h3 id="total-receitas">R$ 0,00</h3>
+        <p>Total de Receitas</p>
+      </div>
+      <div class="dashboard-card">
+        <h3 id="total-despesas">R$ 0,00</h3>
+        <p>Total de Despesas</p>
+      </div>
+      <div class="dashboard-card">
+        <h3 id="saldo">R$ 0,00</h3>
+        <p>Saldo Atual</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Lançamentos Recentes</h3>
+      </div>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Descrição</th>
+              <th>Valor</th>
+              <th>Tipo</th>
+              <th>Data</th>
+            </tr>
+          </thead>
+          <tbody id="tabela-lancamentos-recentes">
+            <!-- Preenchido via JavaScript -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <script type="module" src="js/firebase-config.js"></script>
+  <script type="module" src="js/dashboard.js"></script>
+</body>
+</html>

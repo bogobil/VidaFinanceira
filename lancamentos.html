@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lançamentos - Controle Meu Bolso</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header>
+    <div class="container">
+      <h1>Controle Meu Bolso</h1>
+      <nav>
+        <ul>
+          <li><a href="index.html">Dashboard</a></li>
+          <li><a href="lancamentos.html" class="active">Lançamentos</a></li>
+          <li><a href="quitacoes.html">Quitações</a></li>
+          <li><a href="usuarios.html">Usuários</a></li>
+          <li><a href="cartoes.html">Cartões</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <h2>Lançamentos Financeiros</h2>
+    
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Novo Lançamento</h3>
+      </div>
+      <form id="form-lancamento">
+        <div class="form-group">
+          <label for="descricao">Descrição</label>
+          <input type="text" id="descricao" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label for="valor">Valor</label>
+          <input type="number" id="valor" class="form-control" step="0.01" required>
+        </div>
+        <div class="form-group">
+          <label for="tipo">Tipo</label>
+          <select id="tipo" class="form-control" required>
+            <option value="receita">Receita</option>
+            <option value="despesa">Despesa</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="data">Data</label>
+          <input type="date" id="data" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label for="categoria">Categoria</label>
+          <input type="text" id="categoria" class="form-control" required>
+        </div>
+        <button type="submit" class="btn" id="btn-salvar">Salvar</button>
+      </form>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Lista de Lançamentos</h3>
+      </div>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Descrição</th>
+              <th>Valor</th>
+              <th>Tipo</th>
+              <th>Data</th>
+              <th>Categoria</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tabela-lancamentos">
+            <!-- Preenchido via JavaScript -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <script type="module" src="js/firebase-config.js"></script>
+  <script type="module" src="js/lancamentos.js"></script>
+</body>
+</html>
