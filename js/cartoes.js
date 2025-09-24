@@ -6,6 +6,8 @@ let cartaoEditandoId = null;
 document.addEventListener('DOMContentLoaded', function() {
   carregarCartoes();
   carregarUsuarios();
+  carregarBancos();
+  carregarBandeiras();
   
   document.getElementById('form-cartao').addEventListener('submit', async function(e) {
     e.preventDefault();
@@ -48,6 +50,46 @@ async function carregarUsuarios() {
   }
 }
 
+async function carregarBancos() {
+  try {
+    const bancosRef = collection(db, 'bancos');
+    const querySnapshot = await getDocs(bancosRef);
+    
+    const select = document.getElementById('banco');
+    select.innerHTML = '<option value="">Selecione um banco</option>';
+    
+    querySnapshot.forEach(doc => {
+      const banco = doc.data();
+      const option = document.createElement('option');
+      option.value = doc.id;
+      option.textContent = banco.nome;
+      select.appendChild(option);
+    });
+  } catch (error) {
+    console.error("Erro ao carregar bancos: ", error);
+  }
+}
+
+async function carregarBandeiras() {
+  try {
+    const bandeirasRef = collection(db, 'bandeiras');
+    const querySnapshot = await getDocs(bandeirasRef);
+    
+    const select = document.getElementById('bandeira');
+    select.innerHTML = '<option value="">Selecione uma bandeira</option>';
+    
+    querySnapshot.forEach(doc => {
+      const bandeira = doc.data();
+      const option = document.createElement('option');
+      option.value = doc.id;
+      option.textContent = bandeira.nome;
+      select.appendChild(option);
+    });
+  } catch (error) {
+    console.error("Erro ao carregar bandeiras: ", error);
+  }
+}
+
 async function carregarCartoes() {
   try {
     const cartoesRef = collection(db, 'cartoes');
@@ -73,7 +115,8 @@ async function carregarCartoes() {
         </div>
         <div class="cartao-info">
           <p><strong>Últimos 4 Dígitos:</strong> **** ${cartao.ultimos_digitos}</p>
-          <p><strong>Bandeira:</strong> ${cartao.bandeira}</p>
+          <p><strong>Banco:</strong> ${cartao.bancoNome || 'Banco não encontrado'}</p>
+          <p><strong>Bandeira:</strong> ${cartao.bandeiraNome || 'Bandeira não encontrada'}</p>
           <p><strong>Limite:</strong> ${formatarMoeda(cartao.limite)}</p>
           <p><strong>Utilizado:</strong> ${formatarMoeda(cartao.utilizado)}</p>
           <p><strong>Disponível:</strong> ${formatarMoeda(cartao.limite - cartao.utilizado)}</p>
@@ -97,6 +140,7 @@ async function carregarCartoes() {
 async function salvarCartao() {
   const nome = document.getElementById('nome').value;
   const ultimos_digitos = document.getElementById('ultimos_digitos').value;
+  const banco = document.getElementById('banco').value;
   const bandeira = document.getElementById('bandeira').value;
   const limite = parseFloat(document.getElementById('limite').value);
   const utilizado = parseFloat(document.getElementById('utilizado').value) || 0;
@@ -105,7 +149,7 @@ async function salvarCartao() {
   const emprestado = document.getElementById('emprestado').checked;
   const utilizador = document.getElementById('utilizador').value;
   
-  if (!nome || !ultimos_digitos || !bandeira || !limite || !vencimento || !melhor_compra) {
+  if (!nome || !ultimos_digitos || !banco || !bandeira || !limite || !vencimento || !melhor_compra) {
     alert('Preencha todos os campos obrigatórios!');
     return;
   }
@@ -113,6 +157,34 @@ async function salvarCartao() {
   if (emprestado && !utilizador) {
     alert('Selecione um utilizador para o cartão emprestado!');
     return;
+  }
+  
+  // Obter nome do banco
+  let bancoNome = '';
+  if (banco) {
+    try {
+      const docRef = doc(db, 'bancos', banco);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        bancoNome = docSnap.data().nome;
+      }
+    } catch (error) {
+      console.error("Erro ao obter nome do banco: ", error);
+    }
+  }
+  
+  // Obter nome da bandeira
+  let bandeiraNome = '';
+  if (bandeira) {
+    try {
+      const docRef = doc(db, 'bandeiras', bandeira);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        bandeiraNome = docSnap.data().nome;
+      }
+    } catch (error) {
+      console.error("Erro ao obter nome da bandeira: ", error);
+    }
   }
   
   // Obter nome do utilizador selecionado
@@ -132,7 +204,10 @@ async function salvarCartao() {
   const cartao = {
     nome,
     ultimos_digitos,
+    banco,
+    bancoNome,
     bandeira,
+    bandeiraNome,
     limite,
     utilizado,
     vencimento,
@@ -168,7 +243,8 @@ async function editarCartao(id) {
       const cartao = docSnap.data();
       document.getElementById('nome').value = cartao.nome;
       document.getElementById('ultimos_digitos').value = cartao.ultimos_digitos;
-      document.getElementById('bandeira').value = cartao.bandeira;
+      document.getElementById('banco').value = cartao.banco || '';
+      document.getElementById('bandeira').value = cartao.bandeira || '';
       document.getElementById('limite').value = cartao.limite;
       document.getElementById('utilizado').value = cartao.utilizado;
       document.getElementById('vencimento').value = cartao.vencimento;
