@@ -35,6 +35,10 @@
           <input type="text" id="nome" class="form-control" required>
         </div>
         <div class="form-group">
+          <label for="ultimos_digitos">Últimos 4 Dígitos</label>
+          <input type="text" id="ultimos_digitos" class="form-control" maxlength="4" pattern="[0-9]{4}" required>
+        </div>
+        <div class="form-group">
           <label for="bandeira">Bandeira</label>
           <select id="bandeira" class="form-control" required>
             <option value="visa">Visa</option>
@@ -49,12 +53,23 @@
           <input type="number" id="limite" class="form-control" step="0.01" required>
         </div>
         <div class="form-group">
-          <label for="utilizado">Utilizado</label>
-          <input type="number" id="utilizado" class="form-control" step="0.01" value="0">
-        </div>
-        <div class="form-group">
           <label for="vencimento">Dia do Vencimento</label>
           <input type="number" id="vencimento" class="form-control" min="1" max="31" required>
+        </div>
+        <div class="form-group">
+          <label for="melhor_compra">Melhor Dia para Compra</label>
+          <input type="number" id="melhor_compra" class="form-control" min="1" max="31" required>
+        </div>
+        <div class="form-group">
+          <label>
+            <input type="checkbox" id="emprestado"> Cartão Emprestado
+          </label>
+        </div>
+        <div class="form-group" id="grupo_utilizador" style="display: none;">
+          <label for="utilizador">Utilizador Padrão</label>
+          <select id="utilizador" class="form-control">
+            <option value="">Selecione um utilizador</option>
+          </select>
         </div>
         <button type="submit" class="btn">Salvar</button>
       </form>
