@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bancos e Bandeiras - Controle Meu Bolso</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header>
+    <div class="container">
+      <h1>Controle Meu Bolso</h1>
+      <nav>
+        <ul>
+          <li><a href="index.html">Dashboard</a></li>
+          <li><a href="lancamentos.html">Lançamentos</a></li>
+          <li><a href="quitacoes.html">Quitações</a></li>
+          <li><a href="usuarios.html">Usuários</a></li>
+          <li><a href="cartoes.html">Cartões</a></li>
+          <li><a href="bancos-bandeiras.html" class="active">Bancos e Bandeiras</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <h2>Gerenciamento de Bancos e Bandeiras</h2>
+    
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Adicionar Banco</h3>
+      </div>
+      <form id="form-banco">
+        <div class="form-group">
+          <label for="nome-banco">Nome do Banco</label>
+          <input type="text" id="nome-banco" class="form-control" required>
+        </div>
+        <button type="submit" class="btn">Adicionar Banco</button>
+      </form>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Lista de Bancos</h3>
+      </div>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Nome do Banco</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tabela-bancos">
+            <!-- Preenchido via JavaScript -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Adicionar Bandeira</h3>
+      </div>
+      <form id="form-bandeira">
+        <div class="form-group">
+          <label for="nome-bandeira">Nome da Bandeira</label>
+          <input type="text" id="nome-bandeira" class="form-control" required>
+        </div>
+        <button type="submit" class="btn">Adicionar Bandeira</button>
+      </form>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Lista de Bandeiras</h3>
+      </div>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Nome da Bandeira</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tabela-bandeiras">
+            <!-- Preenchido via JavaScript -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <script type="module" src="js/firebase-config.js"></script>
+  <script type="module" src="js/bancos-bandeiras.js"></script>
+</body>
+</html>
