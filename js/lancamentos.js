@@ -46,7 +46,7 @@ async function mostrarCamposCondicionais() {
         const c = doc.data();
         const opt = document.createElement('option');
         opt.value = doc.id;
-        opt.textContent = `${c.nome} (${c.bandeira_nome || c.bandeira})`;
+        opt.textContent = `${c.banco} (${c.bandeira_nome || c.bandeira})`;
         selCartao.appendChild(opt);
       });
     } catch (error) {
