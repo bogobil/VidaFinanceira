@@ -39,27 +39,186 @@
       const body = document.body;
       const saved = localStorage.getItem('theme') || 'light-theme';
       body.className = saved + ' expanded';
-      btn.textContent = saved === 'light-theme' ? '🌙 Modo Escuro' : '☀️ Modo Claro';
-      btn.addEventListener('click', () => {
-        if (body.classList.contains('light-theme')) {
-          body.classList.replace('light-theme','dark-theme');
-          localStorage.setItem('theme','dark-theme');
-          btn.textContent = '☀️ Modo Claro';
-        } else {
-          body.classList.replace('dark-theme','light-theme');
-          localStorage.setItem('theme','light-theme');
-          btn.textContent = '🌙 Modo Escuro';
-        }
-      });
-    });
+      btn.textContent =<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lançamentos - Vida Financeira</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="light-theme">
+  <header>
+    <div class="container">
+      <div class="header-content">
+        <h1>💰 Vida Financeira</h1>
+        <button id="theme-toggle" class="theme-btn">🌙 Modo Escuro</button>
+      </div>
+      <nav>
+        <ul>
+          <li><a href="index.html">📊 Dashboard</a></li>
+          <li><a href="lancamentos.html" class="active">💸 Lançamentos</a></li>
+          <li><a href="cartoes.html">💳 Cartões</a></li>
+          <li><a href="usuarios.html">👥 Usuários</a></li>
+          <li><a href="bancos-bandeiras.html">🏦 Bancos</a></li>
+          <li><a href="quitacoes.html">✅ Quitações</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
 
-    // Drawer menu
-    document.addEventListener('DOMContentLoaded', () => {
-      const toggle = document.querySelector('.nav-toggle');
-      toggle.addEventListener('click', () => {
-        document.body.classList.toggle('menu-open');
-      });
+  <main class="container">
+    <h2>Novo Lançamento</h2>
+    <div class="card">
+      <form id="form-lancamento" class="form">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="tipo">Tipo*</label>
+            <select id="tipo" class="form-control" required>
+              <option value="">Selecione o tipo</option>
+              <option value="receita">Receita</option>
+              <option value="despesa">Despesa</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="categoria">Categoria*</label>
+            <select id="categoria" class="form-control" required>
+              <option value="">Selecione uma categoria</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="forma">Forma de Pagamento*</label>
+            <select id="forma" class="form-control" required>
+              <option value="">Selecione</option>
+              <option value="pix">PIX</option>
+              <option value="dinheiro">Dinheiro</option>
+              <option value="transferencia">Transferência</option>
+              <option value="cartao">Cartão</option>
+              <option value="boleto">Boleto</option>
+            </select>
+          </div>
+
+          <div class="form-group" id="grupo-tipo-pagamento" style="display:none">
+            <label for="tipo-pagamento">Tipo*</label>
+            <select id="tipo-pagamento" class="form-control">
+              <option value="">Selecione</option>
+              <option value="avista">À Vista</option>
+              <option value="debito">Débito</option>
+              <option value="credito">Crédito</option>
+              <option value="qrcode">QR Code</option>
+            </select>
+          </div>
+
+          <!-- Novo bloco Cartão -->
+          <div class="form-group" id="pag-cartao" style="display:none">
+            <label for="cartao">Cartão*</label>
+            <select id="cartao" class="form-control">
+              <option value="">Selecione seu cartão</option>
+            </select>
+          </div>
+
+          <div class="form-group" id="grupo-pagamento-no" style="display:none">
+            <label for="pagamento-no">Pagamento no*</label>
+            <select id="pagamento-no" class="form-control">
+              <option value="">Selecione</option>
+              <option value="debito">Débito</option>
+              <option value="credito">Crédito</option>
+            </select>
+          </div>
+
+          <div class="form-group" id="grupo-prazo" style="display:none">
+            <label for="prazo">Prazo (parcelas)*</label>
+            <select id="prazo" class="form-control">
+              <option value="1">1x (À Vista)</option>
+              <option value="2">2x</option>
+              <option value="3">3x</option>
+              <option value="4">4x</option>
+              <option value="5">5x</option>
+              <option value="6">6x</option>
+              <option value="7">7x</option>
+              <option value="8">8x</option>
+              <option value="9">9x</option>
+              <option value="10">10x</option>
+              <option value="11">11x</option>
+              <option value="12">12x</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="data">Data*</label>
+            <input id="data" type="date" class="form-control" required>
+          </div>
+
+          <div class="form-group">
+            <label for="usuario">Quem comprou*</label>
+            <select id="usuario" class="form-control" required>
+              <option value="">Selecione quem comprou</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="valor-compra">Valor da Compra (R$)*</label>
+            <input id="valor-compra" type="number" step="0.01" class="form-control" required>
+          </div>
+
+          <div class="form-group">
+            <label for="valor-total">Valor Total (R$)</label>
+            <input id="valor-total" type="number" class="form-control" readonly>
+          </div>
+
+          <div class="form-group form-group-full">
+            <label for="descricao">Descrição*</label>
+            <input id="descricao" type="text" class="form-control" required>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">Salvar Lançamento</button>
+          <button type="button" id="btn-cancelar" class="btn btn-secondary" onclick="cancelarEdicao()" style="display:none">Cancelar</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">📋 Lista de Lançamentos</h3>
+      </div>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Data</th><th>Tipo</th><th>Descrição</th><th>Categoria</th>
+              <th>Forma</th><th>Valor</th><th>Parcela</th><th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tabela-lancamentos"></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <script type="module" src="js/lancamentos.js"></script>
+  <script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const btn = document.getElementById('theme-toggle');
+    const body = document.body;
+    const saved = localStorage.getItem('theme') || 'light-theme';
+    body.className = saved;
+    btn.textContent = saved === 'light-theme' ? '🌙 Modo Escuro' : '☀️ Modo Claro';
+    btn.addEventListener('click', () => {
+      if (body.classList.contains('light-theme')) {
+        body.classList.replace('light-theme', 'dark-theme');
+        localStorage.setItem('theme','dark-theme');
+        btn.textContent = '☀️ Modo Claro';
+      } else {
+        body.classList.replace('dark-theme', 'light-theme');
+        localStorage.setItem('theme','light-theme');
+        btn.textContent = '🌙 Modo Escuro';
+      }
     });
-  </script>
+  });
+</script>
+
 </body>
 </html>
