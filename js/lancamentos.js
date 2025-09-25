@@ -142,6 +142,43 @@ function formatarMoeda(v){
 function formatarData(d){
   return new Date(d+'T00:00:00').toLocaleDateString('pt-BR');
 }
+// Filtrar categorias quando tipo mudar
+document.getElementById('tipo').addEventListener('change', function() {
+    const tipo = this.value;
+    carregarCategorias(tipo);
+});
+
+function carregarCategorias(tipo) {
+    const selectCategoria = document.getElementById('categoria');
+    selectCategoria.innerHTML = '<option value="">Selecione uma categoria</option>';
+    
+    const categorias = {
+        receita: [
+            'Salário', 'Freelance', 'Vendas', 'Investimentos', 'Aluguel', 'Outras Receitas'
+        ],
+        despesa: [
+            'Aluguel/Financiamento', 'Condomínio', 'Energia Elétrica', 'Água', 'Internet', 'Telefone',
+            'Supermercado', 'Restaurante', 'Lanche', 'Delivery',
+            'Combustível', 'Transporte Público', 'Uber/Taxi', 'Manutenção Veículo', 'Seguro Veículo', 'IPVA',
+            'Plano de Saúde', 'Medicamentos', 'Consultas', 'Exames',
+            'Escola/Universidade', 'Cursos', 'Livros', 'Material Escolar',
+            'Cinema', 'Streaming', 'Games', 'Viagens', 'Academia', 'Hobbies',
+            'Roupas', 'Calçados', 'Acessórios',
+            'Cabeleireiro', 'Produtos de Higiene', 'Cosméticos',
+            'Eletrônicos', 'Software', 'Aplicativos',
+            'Presentes', 'Doações', 'Impostos', 'Seguros', 'Taxas Bancárias', 'Diversos'
+        ]
+    };
+    
+    if (tipo && categorias[tipo]) {
+        categorias[tipo].forEach(cat => {
+            const option = document.createElement('option');
+            option.value = cat;
+            option.textContent = cat;
+            selectCategoria.appendChild(option);
+        });
+    }
+}
 
 window.editarLancamento=editarLancamento;
 window.excluirLancamento=excluirLancamento;
