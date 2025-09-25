@@ -29,20 +29,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 function mostrarCamposCondicionais() {
   const forma = document.getElementById('forma').value;
-  // Ocultar todos
   document.getElementById('grupo-tipo-pagamento').style.display = 'none';
   document.getElementById('grupo-pagamento-no').style.display = 'none';
   document.getElementById('grupo-prazo').style.display = 'none';
   document.getElementById('pag-cartao').style.display = 'none';
-  
+
   if (forma === 'cartao') {
-    // Exibir select de cartão, tipo e pagamento no
     document.getElementById('pag-cartao').style.display = 'block';
     document.getElementById('grupo-tipo-pagamento').style.display = 'block';
     document.getElementById('grupo-pagamento-no').style.display = 'block';
     carregarCartoesSelect();
   } else if (forma === 'pix' || forma === 'transferencia' || forma === 'boleto') {
-    // Apenas tipo-pagamento
     document.getElementById('grupo-tipo-pagamento').style.display = 'block';
   }
 }
@@ -141,7 +138,7 @@ async function salvarLancamento() {
   }
   const compraId = `compra_${Date.now()}`;
   const proms = [];
-  for (let i=1; i<=d.prazo; i++) {
+  for (let i = 1; i <= d.prazo; i++) {
     const dt = new Date(d.data);
     dt.setMonth(dt.getMonth() + i - 1);
     const obj = {
@@ -154,7 +151,7 @@ async function salvarLancamento() {
       usuario_nome: nomeUsr
     };
     proms.push(
-      editingId && i===1
+      editingId && i === 1
         ? updateDoc(doc(db,'lancamentos',editingId), obj)
         : (!editingId && addDoc(collection(db,'lancamentos'), obj))
     );
@@ -208,6 +205,7 @@ function cancelarEdicao() {
 function formatarMoeda(v) {
   return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v||0);
 }
+
 function formatarData(d) {
   return new Date(d+'T00:00:00').toLocaleDateString('pt-BR');
 }
