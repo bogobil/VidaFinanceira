@@ -2,9 +2,57 @@ import { db } from './firebase-config.js';
 import { collection, getDocs, query, where, orderBy, limit } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
 
 document.addEventListener('DOMContentLoaded', async () => {
-  await carregarDadosDashboard();
-  await carregarTransacoesRecentes();
+  // Mostrar loading geral
+  showLoading();
+  
+  try {
+    await Promise.all([
+      carregarDadosDashboard(),
+      carregarTransacoesRecentes()
+    ]);
+  } catch (error) {
+    showError('Erro ao carregar dados do dashboard');
+    console.error('Erro geral:', error);
+  } finally {
+    hideLoading();
+  }
 });
+
+function showLoading() {
+  document.getElementById('loading-message').style.display = 'flex';
+  document.querySelectorAll('.card-loading').forEach(el => {
+    el.style.display = 'flex';
+  });
+}
+
+function hideLoading() {
+  document.getElementById('loading-message').style.display = 'none';
+  document.querySelectorAll('.card-loading').forEach(el => {
+    el.style.display = 'none';
+  });
+}
+
+function showError(message) {
+  const errorElement = document.getElementById('error-message');
+  errorElement.querySelector('p').innerHTML = `⚠️ ${message}. <a href="#" id="retry-btn">Tentar novamente</a>`;
+  errorElement.style.display = 'flex';
+  
+  document.getElementById('retry-btn').addEventListener('click', async (e) => {
+    e.preventDefault();
+    errorElement.style.display = 'none';
+    showLoading();
+    try {
+      await Promise.all([
+        carregarDadosDashboard(),
+        carregarTransacoesRecentes()
+      ]);
+    } catch (error) {
+      showError('Erro ao recarregar os dados');
+    } finally {
+      hideLoading();
+    }
+  });
+}
 
 async function carregarDadosDashboard() {
   try {
@@ -77,6 +125,7 @@ async function carregarDadosDashboard() {
     
   } catch (error) {
     console.error('Erro ao carregar dados do dashboard:', error);
+    throw error;
   }
 }
 
@@ -139,6 +188,7 @@ async function carregarTransacoesRecentes() {
         <p>❌ Erro ao carregar transações</p>
       </div>
     `;
+    throw error;
   }
 }
 
@@ -157,87 +207,3 @@ function formatarData(data) {
     year: '2-digit'
   });
 }
-
-// Adicionar estilos para as transações recentes
-const transactionStyles = `
-  .transaction-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem;
-    border-bottom: 1px solid var(--border-light);
-    transition: all 0.2s ease;
-  }
-  
-  .transaction-item:hover {
-    background-color: rgba(99, 102, 241, 0.05);
-    border-radius: 0.5rem;
-  }
-  
-  .transaction-item:last-child {
-    border-bottom: none;
-  }
-  
-  .transaction-info {
-    flex: 1;
-  }
-  
-  .transaction-header {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-bottom: 0.25rem;
-  }
-  
-  .transaction-icon {
-    font-size: 1.2rem;
-  }
-  
-  .transaction-description {
-    font-weight: 600;
-    font-size: 0.95rem;
-  }
-  
-  .transaction-details {
-    color: var(--text-secondary-light);
-    font-size: 0.8rem;
-  }
-  
-  .transaction-value {
-    font-weight: 700;
-    font-size: 1rem;
-  }
-  
-  .transaction-value.positive {
-    color: var(--success-color);
-  }
-  
-  .transaction-value.negative {
-    color: var(--error-color);
-  }
-  
-  .card-value.positive {
-    color: var(--success-color);
-  }
-  
-  .card-value.negative {
-    color: var(--error-color);
-  }
-  
-  body.dark-theme .transaction-details {
-    color: var(--text-secondary-dark);
-  }
-  
-  body.dark-theme .transaction-item:hover {
-    background-color: rgba(99, 102, 241, 0.1);
-  }
-  
-  body.dark-theme .transaction-item {
-    border-bottom-color: var(--border-dark);
-  }
-`;
-
-// Adicionar estilos ao head
-const styleSheet = document.createElement('style');
-styleSheet.textContent = transactionStyles;
-document.head.appendChild(styleSheet);
