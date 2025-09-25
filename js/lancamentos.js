@@ -1,186 +1,37 @@
 // js/lancamentos.js
 import { db } from './firebase-config.js';
 import {
-  collection,
-  addDoc,
-  getDocs,
-  doc,
-  updateDoc,
-  deleteDoc,
-  query,
-  orderBy,
-  where
+  collection, addDoc, getDocs, updateDoc, deleteDoc, doc,
+  query, orderBy, where
 } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
 
-let lancamentoEditandoId = null;
+let idEdit = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
+  carregarCategorias(); // inicial
   await carregarCartoes();
   await carregarUsuarios();
   carregarLancamentos();
 
-  document.getElementById('form-lancamento').addEventListener('submit', async (e) => {
+  document.getElementById('form-lancamento').addEventListener('submit', async e=>{
     e.preventDefault();
     await salvarLancamento();
   });
 
   document.getElementById('valor').addEventListener('input', calcularValorTotal);
   document.getElementById('parcelas').addEventListener('change', calcularValorTotal);
-  document.getElementById('tipo').addEventListener('change', () => {
-    carregarCategorias(document.getElementById('tipo').value);
-  });
+
+  document.getElementById('tipo').addEventListener('change', ()=>carregarCategorias());
+  document.getElementById('forma').addEventListener('change', mostrarSubFormas);
 });
 
-// Carrega cartões no select
-async function carregarCartoes() {
-  const select = document.getElementById('cartao');
-  select.innerHTML = '<option value="">Selecione um cartão</option>';
-  const snap = await getDocs(collection(db, 'cartoes'));
-  snap.forEach(d => {
-    const { nome, banco_nome } = d.data();
-    const opt = document.createElement('option');
-    opt.value = d.id;
-    opt.textContent = `${nome} — ${banco_nome}`;
-    select.appendChild(opt);
-  });
-}
-
-// Carrega usuários no select
-async function carregarUsuarios() {
-  const select = document.getElementById('usuario');
-  select.innerHTML = '<option value="">Selecione quem comprou</option>';
-  const snap = await getDocs(collection(db, 'usuarios'));
-  snap.forEach(d => {
-    const { nome } = d.data();
-    const opt = document.createElement('option');
-    opt.value = d.id;
-    opt.textContent = nome;
-    select.appendChild(opt);
-  });
-}
-
-// Carrega lançamentos na tabela
-async function carregarLancamentos() {
-  const tabela = document.getElementById('tabela-lancamentos');
-  tabela.innerHTML = '';
-  const q = query(collection(db, 'lancamentos'), orderBy('data', 'desc'));
-  const snap = await getDocs(q);
-  snap.forEach(d => {
-    const l = d.data();
-    const row = tabela.insertRow();
-    row.innerHTML = `
-      <td>${formatarData(l.data)}</td>
-      <td><span class="badge ${l.tipo}">${l.tipo}</span></td>
-      <td>${l.descricao}</td>
-      <td>${l.categoria}</td>
-      <td>${l.cartao_nome}</td>
-      <td>${l.usuario_nome}</td>
-      <td>${l.parcela_atual}/${l.total_parcelas}</td>
-      <td>${formatarMoeda(l.valor)}</td>
-      <td>${l.id_compra}</td>
-      <td class="acoes">
-        <button onclick="editarLancamento('${d.id}')" class="btn btn-warning btn-editar">Editar</button>
-        <button onclick="excluirLancamento('${d.id}')" class="btn btn-danger btn-excluir">Excluir</button>
-      </td>`;
-  });
-}
-
-// Salva novo lançamento em parcelas
-async function salvarLancamento() {
-  const tipo = document.getElementById('tipo').value;
-  const cartaoId = document.getElementById('cartao').value;
-  const usuarioId = document.getElementById('usuario').value;
-  const descricao = document.getElementById('descricao').value;
-  const valor = parseFloat(document.getElementById('valor').value) || 0;
-  const parcelas = parseInt(document.getElementById('parcelas').value) || 1;
-  const categoria = document.getElementById('categoria').value;
-  const data0 = document.getElementById('data').value;
-
-  // Busca nomes de cartão e usuário
-  const cartaoSnap = await getDocs(query(collection(db,'cartoes'), where('__name__','==',cartaoId)));
-  const usuarioSnap = await getDocs(query(collection(db,'usuarios'), where('__name__','==',usuarioId)));
-  let cartaoNome='', usuarioNome='';
-  cartaoSnap.forEach(s=>cartaoNome=s.data().nome);
-  usuarioSnap.forEach(s=>usuarioNome=s.data().nome);
-
-  const idCompra = `compra_${Date.now()}`;
-  const prom = [];
-  for (let i=1;i<=parcelas;i++) {
-    const d = new Date(data0);
-    d.setMonth(d.getMonth()+i-1);
-    const data = d.toISOString().split('T')[0];
-    const obj = {
-      tipo, cartao_id:cartaoId, cartao_nome:cartaoNome,
-      usuario_id:usuarioId, usuario_nome:usuarioNome,
-      descricao:`${descricao} - Parcela ${i}/${parcelas}`,
-      valor, categoria, data,
-      parcela_atual:i, total_parcelas:parcelas, id_compra:idCompra
-    };
-    prom.push(!lancamentoEditandoId ? addDoc(collection(db,'lancamentos'),obj)
-      : i===1 && updateDoc(doc(db,'lancamentos',lancamentoEditandoId),obj));
-  }
-  await Promise.all(prom);
-  document.getElementById('form-lancamento').reset();
-  lancamentoEditandoId=null;
-  carregarLancamentos();
-}
-
-// Filtra categorias por tipo
-function carregarCategorias(tipo) {
-  const select = document.getElementById('categoria');
-  select.innerHTML = '<option value="">Selecione uma categoria</option>';
-  const cat = {
-    receita:['Salário','Freelance','Vendas','Investimentos','Aluguel','Outras Receitas'],
-    despesa:[
-      'Aluguel/Financiamento','Condomínio','Energia Elétrica','Água','Internet','Telefone',
-      'Supermercado','Restaurante','Lanche','Delivery','Combustível','Transporte Público','Uber/Taxi',
-      'Manutenção Veículo','Seguro Veículo','IPVA','Plano de Saúde','Medicamentos','Consultas','Exames',
-      'Escola/Universidade','Cursos','Livros','Material Escolar','Cinema','Streaming','Games','Viagens',
-      'Academia','Hobbies','Roupas','Calçados','Acessórios','Cabeleireiro','Produtos de Higiene',
-      'Cosméticos','Eletrônicos','Software','Aplicativos','Presentes','Doações','Impostos','Seguros',
-      'Taxas Bancárias','Diversos'
-    ]
-  }[tipo]||[];
-  cat.forEach(c=>{
-    const o=document.createElement('option');
-    o.value=c; o.textContent=c;
-    select.appendChild(o);
-  });
-}
-
-// Editar lançamento
-async function editarLancamento(id) {
-  lancamentoEditandoId=id;
-  const snap = await getDocs(query(collection(db,'lancamentos'), where('__name__','==',id)));
-  snap.forEach(s=>{
-    const l=s.data();
-    document.getElementById('tipo').value=l.tipo;
-    carregarCategorias(l.tipo);
-    document.getElementById('cartao').value=l.cartao_id;
-    document.getElementById('usuario').value=l.usuario_id;
-    document.getElementById('descricao').value=l.descricao.replace(/ - Parcela.*$/,'');
-    document.getElementById('valor').value=l.valor;
-    document.getElementById('parcelas').value=l.total_parcelas;
-    document.getElementById('categoria').value=l.categoria;
-    document.getElementById('data').value=l.data;
-    document.getElementById('btn-cancelar').style.display='inline-block';
-    calcularValorTotal();
-  });
-}
-
-// Excluir lançamento
-async function excluirLancamento(id) {
-  if (confirm('Excluir este lançamento?')) {
-    await deleteDoc(doc(db,'lancamentos',id));
-    carregarLancamentos();
-  }
-}
-
-// Cancelar edição
-function cancelarEdicao() {
-  lancamentoEditandoId=null;
-  document.getElementById('form-lancamento').reset();
-  document.getElementById('btn-cancelar').style.display='none';
+function mostrarSubFormas(){
+  ['pag-cartao','pag-dinheiro','pag-outro'].forEach(id=>
+    document.getElementById(id).style.display='none');
+  const f=document.getElementById('forma').value;
+  if(f==='cartao') document.getElementById('pag-cartao').style.display='block';
+  if(f==='dinheiro') document.getElementById('pag-dinheiro').style.display='block';
+  if(f==='outro') document.getElementById('pag-outro').style.display='block';
 }
 
 function calcularValorTotal(){
@@ -189,14 +40,124 @@ function calcularValorTotal(){
   document.getElementById('valor_total').value=(v*p).toFixed(2);
 }
 
-function formatarMoeda(v){
-  return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v);
-}
 function formatarData(d){
   return new Date(d+'T00:00:00').toLocaleDateString('pt-BR');
 }
+function formatarMoeda(v){
+  return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v);
+}
 
-// Tornar globais
-window.editarLancamento=editarLancamento;
-window.excluirLancamento=excluirLancamento;
+function carregarCategorias(){
+  const tipo=document.getElementById('tipo').value;
+  const sel=document.getElementById('categoria');
+  sel.innerHTML='<option value="">Selecione uma categoria</option>';
+  const cats={ 
+    receita:['Salário','Freelance','Vendas','Investimentos','Aluguel','Outras Receitas'],
+    despesa:['Aluguel','Condomínio','Supermercado','Saúde','Educação','Lazer','Transporte','Diversos']
+  }[tipo]||[];
+  cats.forEach(c=>sel.add(new Option(c,c)));
+}
+
+async function carregarCartoes(){
+  const sel=document.getElementById('cartao');
+  sel.innerHTML='<option value="">Selecione um cartão</option>';
+  (await getDocs(collection(db,'cartoes'))).forEach(d=>{
+    sel.add(new Option(d.data().nome, d.id));
+  });
+}
+
+async function carregarUsuarios(){
+  const sel=document.getElementById('usuario');
+  sel.innerHTML='<option value="">Selecione quem comprou</option>';
+  (await getDocs(collection(db,'usuarios'))).forEach(d=>{
+    sel.add(new Option(d.data().nome,d.id));
+  });
+}
+
+async function carregarLancamentos(){
+  const tb=document.getElementById('tabela-lancamentos');
+  tb.innerHTML='';
+  const snap=await getDocs(query(collection(db,'lancamentos'),orderBy('data','desc')));
+  snap.forEach(d=>{
+    const l=d.data();
+    const sub=l.tipo_cartao||l.tipo_dinheiro||l.tipo_outro||'';
+    const row=tb.insertRow();
+    row.innerHTML=`
+      <td>${formatarData(l.data)}</td>
+      <td>${l.tipo}</td>
+      <td>${l.descricao}</td>
+      <td>${l.categoria}</td>
+      <td>${l.forma}</td>
+      <td>${sub}</td>
+      <td>${l.parcela_atual}/${l.total_parcelas}</td>
+      <td>${formatarMoeda(l.valor)}</td>
+      <td>
+        <button onclick="editar('${d.id}')" class="btn btn-warning btn-editar">Editar</button>
+        <button onclick="excluir('${d.id}')" class="btn btn-danger btn-excluir">Excluir</button>
+      </td>`;
+  });
+}
+
+async function salvarLancamento(){
+  const l0=document.getElementById('tipo').value;
+  const desc=document.getElementById('descricao').value;
+  const v=parseFloat(document.getElementById('valor').value)||0;
+  const p=parseInt(document.getElementById('parcelas').value)||1;
+  const c=document.getElementById('categoria').value;
+  const d=document.getElementById('data').value;
+  const forma=document.getElementById('forma').value;
+  const tct=document.getElementById('tipo_cartao').value||'';
+  const tdin=document.getElementById('tipo_dinheiro').value||'';
+  const tout=document.getElementById('tipo_outro').value||'';
+
+  const idc0=`compra_${Date.now()}`;
+  const prom=[];
+  for(let i=1;i<=p;i++){
+    const dt=new Date(d);dt.setMonth(dt.getMonth()+i-1);
+    const dd=dt.toISOString().split('T')[0];
+    const obj={tipo:l0,descricao:`${desc} - Parcela ${i}/${p}`,valor:v,
+      categoria:c,data:dd,parcela_atual:i,total_parcelas:p,id_compra:idc0,
+      forma,tipo_cartao:tct,tipo_dinheiro:tdin,tipo_outro:tout};
+    prom.push(!idEdit?addDoc(collection(db,'lancamentos'),obj)
+      :i===1&&updateDoc(doc(db,'lancamentos',idEdit),obj));
+  }
+  await Promise.all(prom);
+  document.getElementById('form-lancamento').reset();
+  idEdit=null;
+  carregarLancamentos();
+}
+
+async function editar(id){
+  idEdit=id;
+  const snap=await getDocs(query(collection(db,'lancamentos'),where('__name__','==',id)));
+  snap.forEach(s=>{
+    const l=s.data();
+    document.getElementById('tipo').value=l.tipo;
+    carregarCategorias();
+    document.getElementById('descricao').value=l.descricao.replace(/ - Parcela.*$/,'');
+    document.getElementById('valor').value=l.valor;
+    document.getElementById('parcelas').value=l.total_parcelas;
+    document.getElementById('categoria').value=l.categoria;
+    document.getElementById('data').value=l.data;
+    document.getElementById('forma').value=l.forma; mostrarSubFormas();
+    document.getElementById('tipo_cartao').value=l.tipo_cartao||'';
+    document.getElementById('tipo_dinheiro').value=l.tipo_dinheiro||'';
+    document.getElementById('tipo_outro').value=l.tipo_outro||'';
+    document.getElementById('btn-cancelar').style.display='inline-block';
+    calcularValorTotal();
+  });
+}
+
+async function excluir(id){
+  if(confirm('Excluir?')){ await deleteDoc(doc(db,'lancamentos',id)); carregarLancamentos();}
+}
+
+function cancelarEdicao(){
+  idEdit=null;
+  document.getElementById('form-lancamento').reset();
+  document.getElementById('btn-cancelar').style.display='none';
+}
+
+window.editar=editar;
+window.excluir=excluir;
 window.cancelarEdicao=cancelarEdicao;
