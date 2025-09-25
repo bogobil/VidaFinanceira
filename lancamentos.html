@@ -28,11 +28,9 @@
 
   <main class="container">
     <h2>Novo Lançamento</h2>
-    
     <div class="card">
       <form id="form-lancamento" class="form">
         <div class="form-grid">
-          <!-- Tipo -->
           <div class="form-group">
             <label for="tipo">Tipo*</label>
             <select id="tipo" class="form-control" required>
@@ -42,7 +40,6 @@
             </select>
           </div>
 
-          <!-- Categoria -->
           <div class="form-group">
             <label for="categoria">Categoria*</label>
             <select id="categoria" class="form-control" required>
@@ -50,7 +47,6 @@
             </select>
           </div>
 
-          <!-- Forma de Pagamento -->
           <div class="form-group">
             <label for="forma">Forma de Pagamento*</label>
             <select id="forma" class="form-control" required>
@@ -63,8 +59,7 @@
             </select>
           </div>
 
-          <!-- Tipo de PIX/Cartão (condicional) -->
-          <div class="form-group" id="grupo-tipo-pagamento" style="display: none;">
+          <div class="form-group" id="grupo-tipo-pagamento" style="display:none">
             <label for="tipo-pagamento">Tipo*</label>
             <select id="tipo-pagamento" class="form-control">
               <option value="">Selecione</option>
@@ -75,8 +70,15 @@
             </select>
           </div>
 
-          <!-- Pagamento no (condicional - só aparece se cartão/PIX) -->
-          <div class="form-group" id="grupo-pagamento-no" style="display: none;">
+          <!-- Novo bloco Cartão -->
+          <div class="form-group" id="pag-cartao" style="display:none">
+            <label for="cartao">Cartão*</label>
+            <select id="cartao" class="form-control">
+              <option value="">Selecione seu cartão</option>
+            </select>
+          </div>
+
+          <div class="form-group" id="grupo-pagamento-no" style="display:none">
             <label for="pagamento-no">Pagamento no*</label>
             <select id="pagamento-no" class="form-control">
               <option value="">Selecione</option>
@@ -85,8 +87,7 @@
             </select>
           </div>
 
-          <!-- Prazo (condicional - só aparece se crédito) -->
-          <div class="form-group" id="grupo-prazo" style="display: none;">
+          <div class="form-group" id="grupo-prazo" style="display:none">
             <label for="prazo">Prazo (parcelas)*</label>
             <select id="prazo" class="form-control">
               <option value="1">1x (À Vista)</option>
@@ -104,13 +105,11 @@
             </select>
           </div>
 
-          <!-- Data -->
           <div class="form-group">
             <label for="data">Data*</label>
-            <input type="date" id="data" class="form-control" required>
+            <input id="data" type="date" class="form-control" required>
           </div>
 
-          <!-- Quem comprou -->
           <div class="form-group">
             <label for="usuario">Quem comprou*</label>
             <select id="usuario" class="form-control" required>
@@ -118,28 +117,24 @@
             </select>
           </div>
 
-          <!-- Valor da compra -->
           <div class="form-group">
             <label for="valor-compra">Valor da Compra (R$)*</label>
-            <input type="number" id="valor-compra" class="form-control" step="0.01" required>
+            <input id="valor-compra" type="number" step="0.01" class="form-control" required>
           </div>
 
-          <!-- Valor Total (calculado) -->
           <div class="form-group">
             <label for="valor-total">Valor Total (R$)</label>
-            <input type="number" id="valor-total" class="form-control" readonly>
+            <input id="valor-total" type="number" class="form-control" readonly>
           </div>
 
-          <!-- Descrição -->
           <div class="form-group form-group-full">
             <label for="descricao">Descrição*</label>
-            <input type="text" id="descricao" class="form-control" required>
+            <input id="descricao" type="text" class="form-control" required>
           </div>
         </div>
-
         <div class="form-actions">
           <button type="submit" class="btn btn-primary">Salvar Lançamento</button>
-          <button type="button" id="btn-cancelar" class="btn btn-secondary" onclick="cancelarEdicao()" style="display: none;">Cancelar</button>
+          <button type="button" id="btn-cancelar" class="btn btn-secondary" onclick="cancelarEdicao()" style="display:none">Cancelar</button>
         </div>
       </form>
     </div>
@@ -152,14 +147,8 @@
         <table>
           <thead>
             <tr>
-              <th>Data</th>
-              <th>Tipo</th>
-              <th>Descrição</th>
-              <th>Categoria</th>
-              <th>Forma</th>
-              <th>Valor</th>
-              <th>Parcela</th>
-              <th>Ações</th>
+              <th>Data</th><th>Tipo</th><th>Descrição</th><th>Categoria</th>
+              <th>Forma</th><th>Valor</th><th>Parcela</th><th>Ações</th>
             </tr>
           </thead>
           <tbody id="tabela-lancamentos"></tbody>
@@ -169,37 +158,5 @@
   </main>
 
   <script type="module" src="js/lancamentos.js"></script>
-  
-  <script>
-    // Funcionalidade do tema
-    document.addEventListener('DOMContentLoaded', function() {
-      const themeToggle = document.getElementById('theme-toggle');
-      const body = document.body;
-      
-      const savedTheme = localStorage.getItem('theme') || 'light-theme';
-      body.className = savedTheme;
-      updateThemeButton(savedTheme);
-      
-      themeToggle.addEventListener('click', function() {
-        if (body.classList.contains('light-theme')) {
-          body.classList.replace('light-theme', 'dark-theme');
-          localStorage.setItem('theme', 'dark-theme');
-          updateThemeButton('dark-theme');
-        } else {
-          body.classList.replace('dark-theme', 'light-theme');
-          localStorage.setItem('theme', 'light-theme');
-          updateThemeButton('light-theme');
-        }
-      });
-      
-      function updateThemeButton(theme) {
-        if (theme === 'dark-theme') {
-          themeToggle.innerHTML = '☀️ Modo Claro';
-        } else {
-          themeToggle.innerHTML = '🌙 Modo Escuro';
-        }
-      }
-    });
-  </script>
 </body>
 </html>
