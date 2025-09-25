@@ -1,4 +1,3 @@
-
 /* ========= Fintech Style CSS - Mantendo funcionalidades existentes ========= */
 
 :root {
@@ -276,53 +275,5 @@ body.dark-theme tr:hover {
   }
   th, td {
     padding: var(--spacing-2) var(--spacing-3);
-  }
-}
-
-/* Drawer e menu centralizado */
-
-/* Botão hamburger */
-.nav-toggle {
-  display: none;
-  position: absolute; top: 1rem; left: 1rem;
-  background: none; border: none;
-  font-size: 1.5rem; cursor: pointer;
-  color: var(--text-light);
-}
-body.dark-theme .nav-toggle {
-  color: var(--text-dark);
-}
-
-/* Nav desktop centralizado */
-nav {
-  background: var(--bg-secondary-light);
-}
-nav ul {
-  display: flex; justify-content: center; gap: 1rem;
-}
-
-/* Mobile drawer */
-@media (max-width: 768px) {
-  .nav-toggle { display: block; }
-  nav {
-    position: fixed; top: 0; left: 0;
-    height: 100vh; width: 220px;
-    transform: translateX(-220px);
-    transition: transform 0.3s ease;
-    background: var(--bg-secondary-light);
-    box-shadow: 2px 0 8px rgba(0,0,0,0.1);
-    z-index: 200;
-  }
-  body.menu-open nav { transform: translateX(0); }
-  nav ul {
-    flex-direction: column; padding-top: 4rem;
-  }
-  main, header, .container {
-    transition: margin-left 0.3s ease;
-  }
-  body.menu-open main,
-  body.menu-open header,
-  body.menu-open .container {
-    margin-left: 220px;
   }
 }
