@@ -7,22 +7,20 @@ import {
 let editingId = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
-  // Configurar data padrão para hoje
-  const hoje = new Date().toISOString().split('T')[0];
-  document.getElementById('data').value = hoje;
+  // Data padrão hoje
+  document.getElementById('data').value = new Date().toISOString().split('T')[0];
   
   await carregarUsuarios();
   carregarLancamentos();
   
-  // Event listeners
+  // Listeners
   document.getElementById('tipo').addEventListener('change', carregarCategorias);
   document.getElementById('forma').addEventListener('change', mostrarCamposCondicionais);
   document.getElementById('tipo-pagamento').addEventListener('change', mostrarPagamentoNo);
   document.getElementById('pagamento-no').addEventListener('change', mostrarPrazo);
   document.getElementById('valor-compra').addEventListener('input', calcularValorTotal);
   document.getElementById('prazo').addEventListener('change', calcularValorTotal);
-  
-  document.getElementById('form-lancamento').addEventListener('submit', async (e) => {
+  document.getElementById('form-lancamento').addEventListener('submit', async e => {
     e.preventDefault();
     await salvarLancamento();
   });
@@ -30,53 +28,76 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 function mostrarCamposCondicionais() {
   const forma = document.getElementById('forma').value;
-  const grupoTipo = document.getElementById('grupo-tipo-pagamento');
-  
-  // Resetar campos
+  document.getElementById('grupo-tipo-pagamento').style.display = 'none';
   document.getElementById('grupo-pagamento-no').style.display = 'none';
   document.getElementById('grupo-prazo').style.display = 'none';
   
   if (forma === 'pix' || forma === 'cartao') {
-    grupoTipo.style.display = 'block';
-  } else {
-    grupoTipo.style.display = 'none';
-    // Para outras formas, definir como "à vista" por padrão
-    document.getElementById('prazo').value = '1';
-    calcularValorTotal();
+    document.getElementById('grupo-tipo-pagamento').style.display = 'block';
+  }
+}
+
+async function mostrarCamposCondicionais(event) {
+  const forma = event.target.value;
+  // reset
+  document.getElementById('grupo-tipo-pagamento').style.display = 'none';
+  document.getElementById('grupo-pagamento-no').style.display = 'none';
+  document.getElementById('grupo-prazo').style.display = 'none';
+  
+  if (forma === 'pix' || forma === 'cartao') {
+    document.getElementById('grupo-tipo-pagamento').style.display = 'block';
+  }
+}
+
+async function mostrarCamposCondicionais() {
+  const forma = document.getElementById('forma').value;
+  document.getElementById('grupo-tipo-pagamento').style.display = 'none';
+  document.getElementById('grupo-pagamento-no').style.display = 'none';
+  document.getElementById('grupo-prazo').style.display = 'none';
+  
+  if (forma === 'cartao') {
+    // mostra tipo pagamento e select cartões
+    document.getElementById('grupo-tipo-pagamento').style.display = 'block';
+    document.getElementById('pagamento-no').parentElement.style.display = 'block';
+    
+    const selCartao = document.getElementById('cartao');
+    selCartao.innerHTML = '<option value=\"\">Selecione seu cartão</option>';
+    const snap = await getDocs(collection(db, 'cartoes'));
+    snap.forEach(d => {
+      const c = d.data();
+      const opt = document.createElement('option');
+      opt.value = d.id;
+      opt.textContent = `${c.nome} (${c.bandeira_nome||c.bandeira})`;
+      selCartao.appendChild(opt);
+    });
+  } else if (forma === 'pix') {
+    document.getElementById('grupo-tipo-pagamento').style.display = 'block';
+  } else if (forma === 'dinheiro' || forma === 'transferencia' || forma === 'boleto') {
+    // apenas tipo-pagamento para QRCode, à vista
+    document.getElementById('grupo-tipo-pagamento').style.display = 'block';
   }
 }
 
 function mostrarPagamentoNo() {
   const tipoPagamento = document.getElementById('tipo-pagamento').value;
-  const grupoPagamentoNo = document.getElementById('grupo-pagamento-no');
+  document.getElementById('grupo-pagamento-no').style.display = 'none';
+  document.getElementById('grupo-prazo').style.display = 'none';
   
   if (tipoPagamento === 'debito' || tipoPagamento === 'credito') {
-    grupoPagamentoNo.style.display = 'block';
+    document.getElementById('grupo-pagamento-no').style.display = 'block';
     document.getElementById('pagamento-no').value = tipoPagamento;
-    
     if (tipoPagamento === 'credito') {
-      mostrarPrazo();
-    } else {
-      document.getElementById('grupo-prazo').style.display = 'none';
-      document.getElementById('prazo').value = '1';
-      calcularValorTotal();
+      document.getElementById('grupo-prazo').style.display = 'block';
     }
-  } else {
-    grupoPagamentoNo.style.display = 'none';
-    document.getElementById('grupo-prazo').style.display = 'none';
-    document.getElementById('prazo').value = '1';
-    calcularValorTotal();
   }
 }
 
 function mostrarPrazo() {
   const pagamentoNo = document.getElementById('pagamento-no').value;
-  const grupoPrazo = document.getElementById('grupo-prazo');
-  
   if (pagamentoNo === 'credito') {
-    grupoPrazo.style.display = 'block';
+    document.getElementById('grupo-prazo').style.display = 'block';
   } else {
-    grupoPrazo.style.display = 'none';
+    document.getElementById('grupo-prazo').style.display = 'none';
     document.getElementById('prazo').value = '1';
     calcularValorTotal();
   }
@@ -85,203 +106,148 @@ function mostrarPrazo() {
 function calcularValorTotal() {
   const valorCompra = parseFloat(document.getElementById('valor-compra').value) || 0;
   const prazo = parseInt(document.getElementById('prazo').value) || 1;
-  
   const valorTotal = valorCompra / prazo;
   document.getElementById('valor-total').value = valorTotal.toFixed(2);
 }
 
 function carregarCategorias() {
   const tipo = document.getElementById('tipo').value;
-  const select = document.getElementById('categoria');
-  select.innerHTML = '<option value="">Selecione uma categoria</option>';
-  
-  const categorias = {
-    receita: ['Salário', 'Freelance', 'Vendas', 'Investimentos', 'Aluguel', 'Outras Receitas'],
-    despesa: [
-      'Aluguel/Financiamento', 'Condomínio', 'Energia Elétrica', 'Água', 'Internet', 'Telefone',
-      'Supermercado', 'Restaurante', 'Lanche', 'Delivery',
-      'Combustível', 'Transporte Público', 'Uber/Taxi', 'Manutenção Veículo',
-      'Plano de Saúde', 'Medicamentos', 'Consultas', 'Exames',
-      'Escola/Universidade', 'Cursos', 'Livros', 'Material Escolar',
-      'Cinema', 'Streaming', 'Games', 'Viagens', 'Academia', 'Hobbies',
-      'Roupas', 'Calçados', 'Acessórios', 'Cabeleireiro', 'Produtos de Higiene',
-      'Eletrônicos', 'Software', 'Presentes', 'Impostos', 'Seguros', 'Diversos'
-    ]
+  const sel = document.getElementById('categoria');
+  sel.innerHTML = '<option value=\"\">Selecione uma categoria</option>';
+  const map = {
+    receita:['Salário','Freelance','Vendas','Investimentos','Aluguel','Outras Receitas'],
+    despesa:['Supermercado','Transporte','Saúde','Educação','Lazer','Diversos']
   };
-  
-  const lista = categorias[tipo] || [];
-  lista.forEach(cat => {
-    const option = document.createElement('option');
-    option.value = cat;
-    option.textContent = cat;
-    select.appendChild(option);
+  (map[tipo]||[]).forEach(c=>{
+    const opt=document.createElement('option');
+    opt.value=c; opt.textContent=c; sel.appendChild(opt);
   });
 }
 
 async function carregarUsuarios() {
-  try {
-    const select = document.getElementById('usuario');
-    select.innerHTML = '<option value="">Selecione quem comprou</option>';
-    
-    const snapshot = await getDocs(collection(db, 'usuarios'));
-    snapshot.forEach(doc => {
-      const usuario = doc.data();
-      const option = document.createElement('option');
-      option.value = doc.id;
-      option.textContent = usuario.nome;
-      select.appendChild(option);
-    });
-  } catch (error) {
-    console.error('Erro ao carregar usuários:', error);
-  }
+  const sel = document.getElementById('usuario');
+  sel.innerHTML = '<option value=\"\">Selecione quem comprou</option>';
+  const snap = await getDocs(collection(db, 'usuarios'));
+  snap.forEach(d => {
+    sel.appendChild(new Option(d.data().nome, d.id));
+  });
 }
 
 async function carregarLancamentos() {
-  try {
-    const tabela = document.getElementById('tabela-lancamentos');
-    tabela.innerHTML = '';
-    
-    const q = query(collection(db, 'lancamentos'), orderBy('data', 'desc'));
-    const snapshot = await getDocs(q);
-    
-    snapshot.forEach(doc => {
-      const lancamento = doc.data();
-      const row = tabela.insertRow();
-      
-      row.innerHTML = `
-        <td>${formatarData(lancamento.data)}</td>
-        <td><span class="badge ${lancamento.tipo}">${lancamento.tipo}</span></td>
-        <td>${lancamento.descricao}</td>
-        <td>${lancamento.categoria}</td>
-        <td>${lancamento.forma || 'N/A'}</td>
-        <td>${formatarMoeda(lancamento.valor_total || lancamento.valor)}</td>
-        <td>${lancamento.parcela_atual || 1}/${lancamento.total_parcelas || 1}</td>
-        <td>
-          <button onclick="editarLancamento('${doc.id}')" class="btn btn-warning btn-sm">Editar</button>
-          <button onclick="excluirLancamento('${doc.id}')" class="btn btn-danger btn-sm">Excluir</button>
-        </td>
-      `;
-    });
-  } catch (error) {
-    console.error('Erro ao carregar lançamentos:', error);
-  }
+  const tabela = document.getElementById('tabela-lancamentos');
+  tabela.innerHTML = '';
+  const snap = await getDocs(query(collection(db, 'lancamentos'), orderBy('data','desc')));
+  snap.forEach(d=>{
+    const l=d.data();
+    const row=tabela.insertRow();
+    row.innerHTML=`
+      <td>${formatarData(l.data)}</td>
+      <td>${l.tipo}</td>
+      <td>${l.descricao}</td>
+      <td>${l.categoria}</td>
+      <td>${l.forma}</td>
+      <td>${formatarMoeda(l.valor_total||l.valor)}</td>
+      <td>${l.parcela_atual||1}/${l.total_parcelas||1}</td>
+      <td>
+        <button onclick="editarLancamento('${d.id}')" class="btn btn-warning btn-sm">Editar</button>
+        <button onclick="excluirLancamento('${d.id}')" class="btn btn-danger btn-sm">Excluir</button>
+      </td>`;
+  });
 }
 
 async function salvarLancamento() {
-  try {
-    const dados = {
-      tipo: document.getElementById('tipo').value,
-      categoria: document.getElementById('categoria').value,
-      forma: document.getElementById('forma').value,
-      tipo_pagamento: document.getElementById('tipo-pagamento').value,
-      pagamento_no: document.getElementById('pagamento-no').value,
-      prazo: parseInt(document.getElementById('prazo').value) || 1,
-      data: document.getElementById('data').value,
-      usuario_id: document.getElementById('usuario').value,
-      valor_compra: parseFloat(document.getElementById('valor-compra').value),
-      valor_total: parseFloat(document.getElementById('valor-total').value),
-      descricao: document.getElementById('descricao').value
-    };
-    
-    // Buscar nome do usuário
-    if (dados.usuario_id) {
-      const usuarioSnapshot = await getDocs(query(collection(db, 'usuarios'), where('__name__', '==', dados.usuario_id)));
-      usuarioSnapshot.forEach(doc => {
-        dados.usuario_nome = doc.data().nome;
-      });
-    }
-    
-    // Gerar ID da compra
-    const idCompra = `compra_${Date.now()}`;
-    
-    // Criar lançamentos baseado no prazo
-    const promises = [];
-    for (let i = 1; i <= dados.prazo; i++) {
-      const dataVencimento = new Date(dados.data);
-      dataVencimento.setMonth(dataVencimento.getMonth() + (i - 1));
-      
-      const lancamento = {
-        ...dados,
-        data: dataVencimento.toISOString().split('T')[0],
-        descricao: `${dados.descricao} - Parcela ${i}/${dados.prazo}`,
-        valor: dados.valor_total,
-        parcela_atual: i,
-        total_parcelas: dados.prazo,
-        id_compra: idCompra
-      };
-      
-      if (editingId && i === 1) {
-        promises.push(updateDoc(doc(db, 'lancamentos', editingId), lancamento));
-      } else if (!editingId) {
-        promises.push(addDoc(collection(db, 'lancamentos'), lancamento));
-      }
-    }
-    
-    await Promise.all(promises);
-    
-    // Limpar formulário
-    document.getElementById('form-lancamento').reset();
-    document.getElementById('data').value = new Date().toISOString().split('T')[0];
-    document.getElementById('grupo-tipo-pagamento').style.display = 'none';
-    document.getElementById('grupo-pagamento-no').style.display = 'none';
-    document.getElementById('grupo-prazo').style.display = 'none';
-    
-    editingId = null;
-    document.getElementById('btn-cancelar').style.display = 'none';
-    
-    carregarLancamentos();
-    alert('Lançamento salvo com sucesso!');
-    
-  } catch (error) {
-    console.error('Erro ao salvar lançamento:', error);
-    alert('Erro ao salvar lançamento: ' + error.message);
+  const dados = {
+    tipo: document.getElementById('tipo').value,
+    categoria: document.getElementById('categoria').value,
+    forma: document.getElementById('forma').value,
+    cartao_id: document.getElementById('cartao').value,
+    tipo_pagamento: document.getElementById('tipo-pagamento').value,
+    pagamento_no: document.getElementById('pagamento-no').value,
+    prazo: parseInt(document.getElementById('prazo').value)||1,
+    data: document.getElementById('data').value,
+    usuario_id: document.getElementById('usuario').value,
+    valor_compra: parseFloat(document.getElementById('valor-compra').value),
+    valor_total: parseFloat(document.getElementById('valor-total').value),
+    descricao: document.getElementById('descricao').value
+  };
+  // buscar nome de usuário
+  if(dados.usuario_id){
+    const uSnap = await getDocs(query(collection(db,'usuarios'),where('__name__','==',dados.usuario_id)));
+    uSnap.forEach(s=>dados.usuario_nome=s.data().nome);
   }
+  // criar lançamentos
+  const compraId=`compra_${Date.now()}`;
+  const proms=[];
+  for(let i=1;i<=dados.prazo;i++){
+    const dt=new Date(dados.data); dt.setMonth(dt.getMonth()+i-1);
+    const obj={...dados,
+      data:dt.toISOString().split('T')[0],
+      descricao:`${dados.descricao} - Parcela ${i}/${dados.prazo}`,
+      parcela_atual:i,
+      total_parcelas:dados.prazo,
+      id_compra:compraId
+    };
+    proms.push(
+      editingId && i===1
+        ? updateDoc(doc(db,'lancamentos',editingId),obj)
+        : !editingId && addDoc(collection(db,'lancamentos'),obj)
+    );
+  }
+  await Promise.all(proms);
+  document.getElementById('form-lancamento').reset();
+  editingId=null;
+  carregarLancamentos();
 }
 
 async function editarLancamento(id) {
-  // Implementar lógica de edição
-  editingId = id;
-  document.getElementById('btn-cancelar').style.display = 'inline-block';
-  // ... resto da lógica de edição
+  editingId=id;
+  document.getElementById('btn-cancelar').style.display='inline-block';
+  const snap=await getDocs(query(collection(db,'lancamentos'),where('__name__','==',id)));
+  snap.forEach(s=>{
+    const l=s.data();
+    document.getElementById('tipo').value=l.tipo;
+    carregarCategorias();
+    document.getElementById('categoria').value=l.categoria;
+    document.getElementById('forma').value=l.forma;
+    mostrarCamposCondicionais();
+    document.getElementById('cartao').value=l.cartao_id||'';
+    document.getElementById('tipo-pagamento').value=l.tipo_pagamento||'';
+    mostrarPagamentoNo();
+    document.getElementById('pagamento-no').value=l.pagamento_no||'';
+    mostrarPrazo();
+    document.getElementById('prazo').value=l.prazo||1;
+    document.getElementById('data').value=l.data;
+    document.getElementById('usuario').value=l.usuario_id||'';
+    document.getElementById('valor-compra').value=l.valor_compra;
+    document.getElementById('valor-total').value=l.valor_total;
+    document.getElementById('descricao').value=l.descricao.replace(/ - Parcela.*$/,'');
+  });
 }
 
 async function excluirLancamento(id) {
-  if (confirm('Tem certeza que deseja excluir este lançamento?')) {
-    try {
-      await deleteDoc(doc(db, 'lancamentos', id));
-      carregarLancamentos();
-      alert('Lançamento excluído com sucesso!');
-    } catch (error) {
-      console.error('Erro ao excluir lançamento:', error);
-      alert('Erro ao excluir lançamento: ' + error.message);
-    }
+  if (confirm('Excluir?')) {
+    await deleteDoc(doc(db,'lancamentos',id));
+    carregarLancamentos();
   }
 }
 
 function cancelarEdicao() {
-  editingId = null;
+  editingId=null;
   document.getElementById('form-lancamento').reset();
-  document.getElementById('data').value = new Date().toISOString().split('T')[0];
-  document.getElementById('btn-cancelar').style.display = 'none';
-  
-  // Ocultar campos condicionais
-  document.getElementById('grupo-tipo-pagamento').style.display = 'none';
-  document.getElementById('grupo-pagamento-no').style.display = 'none';
-  document.getElementById('grupo-prazo').style.display = 'none';
+  document.getElementById('btn-cancelar').style.display='none';
+  document.getElementById('grupo-tipo-pagamento').style.display='none';
+  document.getElementById('grupo-pagamento-no').style.display='none';
+  document.getElementById('grupo-prazo').style.display='none';
 }
 
-function formatarMoeda(valor) {
-  return new Intl.NumberFormat('pt-BR', {
-    style: 'currency',
-    currency: 'BRL'
-  }).format(valor || 0);
+function formatarMoeda(v) {
+  return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v||0);
+}
+function formatarData(d) {
+  return new Date(d+'T00:00:00').toLocaleDateString('pt-BR');
 }
 
-function formatarData(data) {
-  return new Date(data + 'T00:00:00').toLocaleDateString('pt-BR');
-}
-
-// Tornar funções globais
+// Globais
 window.editarLancamento = editarLancamento;
 window.excluirLancamento = excluirLancamento;
 window.cancelarEdicao = cancelarEdicao;
