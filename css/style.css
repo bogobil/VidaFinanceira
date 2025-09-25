@@ -1247,8 +1247,7 @@ table tr:last-child td {
         padding: var(--space-4) var(--space-8);
         font-size: var(--font-size-xs);
     }
-    
-    .acoes {
+        .acoes {
         gap: var(--space-4);
     }
     
