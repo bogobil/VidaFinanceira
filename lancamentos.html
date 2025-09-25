@@ -1,219 +1,118 @@
+<!-- lancamentos.html -->
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lançamentos - Vida Financeira</title>
-    <link rel="stylesheet" href="css/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lançamentos - Vida Financeira</title>
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <div class="container">
-        <header>
-            <nav>
-                <ul>
-                    <li><a href="index.html">Dashboard</a></li>
-                    <li><a href="lancamentos.html" class="active">Lançamentos</a></li>
-                    <li><a href="cartoes.html">Cartões</a></li>
-                    <li><a href="usuarios.html">Usuários</a></li>
-                    <li><a href="bancos-bandeiras.html">Bancos/Bandeiras</a></li>
-                    <li><a href="quitacoes.html">Quitações</a></li>
-                </ul>
-            </nav>
-        </header>
+  <div class="container">
+    <header>
+      <nav>
+        <ul>
+          <li><a href="index.html">Dashboard</a></li>
+          <li><a href="lancamentos.html" class="active">Lançamentos</a></li>
+          <li><a href="cartoes.html">Cartões</a></li>
+          <li><a href="usuarios.html">Usuários</a></li>
+          <li><a href="bancos-bandeiras.html">Bancos/Bandeiras</a></li>
+          <li><a href="quitacoes.html">Quitações</a></li>
+        </ul>
+      </nav>
+    </header>
 
-        <main>
-            <h1>Lançamentos</h1>
-            
-            <div class="card">
-                <form id="form-lancamento" class="form">
-                    <div class="form-grid">
-                        <!-- 1. Tipo (primeiro campo) -->
-                        <div class="form-group">
-                            <label for="tipo">Tipo*</label>
-                            <select id="tipo" name="tipo" class="form-control" required>
-                                <option value="">Selecione o tipo</option>
-                                <option value="receita">Receita</option>
-                                <option value="despesa">Despesa</option>
-                            </select>
-                        </div>
+    <main>
+      <h1>Lançamentos</h1>
 
-                        <!-- 2. Cartão (segundo campo) -->
-                        <div class="form-group">
-                            <label for="cartao">Cartão*</label>
-                            <select id="cartao" name="cartao" class="form-control" required>
-                                <option value="">Selecione um cartão</option>
-                            </select>
-                        </div>
-
-                        <!-- 3. Quem comprou (terceiro campo) -->
-                        <div class="form-group">
-                            <label for="usuario">Quem comprou*</label>
-                            <select id="usuario" name="usuario" class="form-control" required>
-                                <option value="">Selecione quem comprou</option>
-                            </select>
-                        </div>
-
-                        <!-- 4. Descrição -->
-                        <div class="form-group form-group-full">
-                            <label for="descricao">Descrição*</label>
-                            <input type="text" id="descricao" name="descricao" class="form-control" required>
-                        </div>
-
-                        <!-- 5. Valor por parcela -->
-                        <div class="form-group">
-                            <label for="valor">Valor por parcela (R$)*</label>
-                            <input type="number" id="valor" name="valor" class="form-control" step="0.01" required>
-                        </div>
-
-                        <!-- 6. Número de parcelas (lista de 1 a 12) -->
-                        <div class="form-group">
-                            <label for="parcelas">Número de parcelas*</label>
-                            <select id="parcelas" name="parcelas" class="form-control" required>
-                                <option value="1">1x (À vista)</option>
-                                <option value="2">2x</option>
-                                <option value="3">3x</option>
-                                <option value="4">4x</option>
-                                <option value="5">5x</option>
-                                <option value="6">6x</option>
-                                <option value="7">7x</option>
-                                <option value="8">8x</option>
-                                <option value="9">9x</option>
-                                <option value="10">10x</option>
-                                <option value="11">11x</option>
-                                <option value="12">12x</option>
-                            </select>
-                        </div>
-
-                        <!-- 7. Valor total (calculado automaticamente) -->
-                        <div class="form-group">
-                            <label for="valor_total">Valor Total (R$)</label>
-                            <input type="number" id="valor_total" name="valor_total" class="form-control" step="0.01" readonly>
-                        </div>
-
-                        <!-- 8. Categoria (lista das principais) -->
-                        <div class="form-group">
-                            <label for="categoria">Categoria*</label>
-                            <select id="categoria" name="categoria" class="form-control" required>
-                                <option value="">Selecione uma categoria</option>
-                                <optgroup label="💰 Receitas">
-                                    <option value="Salário">Salário</option>
-                                    <option value="Freelance">Freelance</option>
-                                    <option value="Vendas">Vendas</option>
-                                    <option value="Investimentos">Investimentos</option>
-                                    <option value="Aluguel">Aluguel</option>
-                                    <option value="Outras Receitas">Outras Receitas</option>
-                                </optgroup>
-                                <optgroup label="🏠 Casa e Moradia">
-                                    <option value="Aluguel/Financiamento">Aluguel/Financiamento</option>
-                                    <option value="Condomínio">Condomínio</option>
-                                    <option value="Energia Elétrica">Energia Elétrica</option>
-                                    <option value="Água">Água</option>
-                                    <option value="Gás">Gás</option>
-                                    <option value="Internet">Internet</option>
-                                    <option value="Telefone">Telefone</option>
-                                </optgroup>
-                                <optgroup label="🍽️ Alimentação">
-                                    <option value="Supermercado">Supermercado</option>
-                                    <option value="Restaurante">Restaurante</option>
-                                    <option value="Lanche">Lanche</option>
-                                    <option value="Delivery">Delivery</option>
-                                </optgroup>
-                                <optgroup label="🚗 Transporte">
-                                    <option value="Combustível">Combustível</option>
-                                    <option value="Transporte Público">Transporte Público</option>
-                                    <option value="Uber/Taxi">Uber/Taxi</option>
-                                    <option value="Manutenção Veículo">Manutenção Veículo</option>
-                                    <option value="Seguro Veículo">Seguro Veículo</option>
-                                    <option value="IPVA">IPVA</option>
-                                </optgroup>
-                                <optgroup label="🏥 Saúde">
-                                    <option value="Plano de Saúde">Plano de Saúde</option>
-                                    <option value="Medicamentos">Medicamentos</option>
-                                    <option value="Consultas">Consultas</option>
-                                    <option value="Exames">Exames</option>
-                                </optgroup>
-                                <optgroup label="🎓 Educação">
-                                    <option value="Escola/Universidade">Escola/Universidade</option>
-                                    <option value="Cursos">Cursos</option>
-                                    <option value="Livros">Livros</option>
-                                    <option value="Material Escolar">Material Escolar</option>
-                                </optgroup>
-                                <optgroup label="🎮 Lazer e Entretenimento">
-                                    <option value="Cinema">Cinema</option>
-                                    <option value="Streaming">Streaming</option>
-                                    <option value="Games">Games</option>
-                                    <option value="Viagens">Viagens</option>
-                                    <option value="Academia">Academia</option>
-                                    <option value="Hobbies">Hobbies</option>
-                                </optgroup>
-                                <optgroup label="👕 Vestuário">
-                                    <option value="Roupas">Roupas</option>
-                                    <option value="Calçados">Calçados</option>
-                                    <option value="Acessórios">Acessórios</option>
-                                </optgroup>
-                                <optgroup label="💄 Cuidados Pessoais">
-                                    <option value="Cabeleireiro">Cabeleireiro</option>
-                                    <option value="Produtos de Higiene">Produtos de Higiene</option>
-                                    <option value="Cosméticos">Cosméticos</option>
-                                </optgroup>
-                                <optgroup label="📱 Tecnologia">
-                                    <option value="Eletrônicos">Eletrônicos</option>
-                                    <option value="Software">Software</option>
-                                    <option value="Aplicativos">Aplicativos</option>
-                                </optgroup>
-                                <optgroup label="🎁 Outros">
-                                    <option value="Presentes">Presentes</option>
-                                    <option value="Doações">Doações</option>
-                                    <option value="Impostos">Impostos</option>
-                                    <option value="Seguros">Seguros</option>
-                                    <option value="Taxas Bancárias">Taxas Bancárias</option>
-                                    <option value="Diversos">Diversos</option>
-                                </optgroup>
-                            </select>
-                        </div>
-
-                        <!-- 9. Data da primeira parcela -->
-                        <div class="form-group">
-                            <label for="data">Data da primeira parcela*</label>
-                            <input type="date" id="data" name="data" class="form-control" required>
-                        </div>
-                    </div>
-
-                    <div class="form-actions">
-                        <button type="submit" id="btn-salvar" class="btn btn-primary">Salvar Lançamento</button>
-                        <button type="button" id="btn-cancelar" class="btn btn-secondary" onclick="cancelarEdicao()" style="display: none;">Cancelar</button>
-                    </div>
-                </form>
+      <div class="card">
+        <form id="form-lancamento" class="form">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="tipo">Tipo*</label>
+              <select id="tipo" name="tipo" class="form-control" required>
+                <option value="">Selecione o tipo</option>
+                <option value="receita">Receita</option>
+                <option value="despesa">Despesa</option>
+              </select>
             </div>
-
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">Lista de Lançamentos</h2>
-                </div>
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Data</th>
-                                <th>Tipo</th>
-                                <th>Descrição</th>
-                                <th>Categoria</th>
-                                <th>Cartão</th>
-                                <th>Usuário</th>
-                                <th>Parcela</th>
-                                <th>Valor</th>
-                                <th>ID Compra</th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tabela-lancamentos">
-                           </tbody>
-                    </table>
-                </div>
+            <div class="form-group">
+              <label for="cartao">Cartão*</label>
+              <select id="cartao" name="cartao" class="form-control" required>
+                <option value="">Selecione um cartão</option>
+              </select>
             </div>
-        </main>
-    </div>
-<script type="module" src="js/lancamentos.js"></script>
-<script src="js/filtrar-categorias.js"></script>
+            <div class="form-group">
+              <label for="usuario">Quem comprou*</label>
+              <select id="usuario" name="usuario" class="form-control" required>
+                <option value="">Selecione quem comprou</option>
+              </select>
+            </div>
+            <div class="form-group form-group-full">
+              <label for="descricao">Descrição*</label>
+              <input type="text" id="descricao" name="descricao" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label for="valor">Valor por parcela (R$)*</label>
+              <input type="number" id="valor" name="valor" class="form-control" step="0.01" required>
+            </div>
+            <div class="form-group">
+              <label for="parcelas">Número de parcelas*</label>
+              <select id="parcelas" name="parcelas" class="form-control" required>
+                <option value="1">1x (À vista)</option>
+                <option value="2">2x</option>
+                <option value="3">3x</option>
+                <option value="4">4x</option>
+                <option value="5">5x</option>
+                <option value="6">6x</option>
+                <option value="7">7x</option>
+                <option value="8">8x</option>
+                <option value="9">9x</option>
+                <option value="10">10x</option>
+                <option value="11">11x</option>
+                <option value="12">12x</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="valor_total">Valor Total (R$)</label>
+              <input type="number" id="valor_total" name="valor_total" class="form-control" readonly>
+            </div>
+            <div class="form-group">
+              <label for="categoria">Categoria*</label>
+              <select id="categoria" name="categoria" class="form-control" required>
+                <option value="">Selecione uma categoria</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="data">Data da primeira parcela*</label>
+              <input type="date" id="data" name="data" class="form-control" required>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Salvar Lançamento</button>
+            <button type="button" id="btn-cancelar" class="btn btn-secondary" onclick="cancelarEdicao()" style="display:none;">Cancelar</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><h2 class="card-title">Lista de Lançamentos</h2></div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Data</th><th>Tipo</th><th>Descrição</th><th>Categoria</th>
+                <th>Cartão</th><th>Usuário</th><th>Parcela</th><th>Valor</th><th>ID Compra</th><th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tabela-lancamentos"></tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script type="module" src="js/lancamentos-final-listas.js"></script>
+  <script src="js/filtrar-categorias.js"></script>
 </body>
 </html>
