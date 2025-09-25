@@ -90,7 +90,6 @@ async function carregarLancamentos(){
       </td>`;
   });
 }
-
 async function salvar(){
   const tipo=document.getElementById('tipo').value;
   const desc=document.getElementById('descricao').value;
