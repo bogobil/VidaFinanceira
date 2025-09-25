@@ -24,89 +24,104 @@
         <main>
             <h1>Lançamentos</h1>
             
-            <form id="form-lancamento" class="form">
-                <!-- 1. Tipo (primeiro campo) -->
-                <div class="form-group">
-                    <label for="tipo">Tipo*</label>
-                    <select id="tipo" name="tipo" required>
-                        <option value="">Selecione o tipo</option>
-                        <option value="receita">Receita</option>
-                        <option value="despesa">Despesa</option>
-                    </select>
+            <div class="card">
+                <form id="form-lancamento" class="form">
+                    <div class="form-grid">
+                        <!-- 1. Tipo (primeiro campo) -->
+                        <div class="form-group">
+                            <label for="tipo">Tipo*</label>
+                            <select id="tipo" name="tipo" class="form-control" required>
+                                <option value="">Selecione o tipo</option>
+                                <option value="receita">Receita</option>
+                                <option value="despesa">Despesa</option>
+                            </select>
+                        </div>
+
+                        <!-- 2. Cartão (segundo campo) -->
+                        <div class="form-group">
+                            <label for="cartao">Cartão*</label>
+                            <select id="cartao" name="cartao" class="form-control" required>
+                                <option value="">Selecione um cartão</option>
+                            </select>
+                        </div>
+
+                        <!-- 3. Quem comprou (terceiro campo) -->
+                        <div class="form-group">
+                            <label for="usuario">Quem comprou*</label>
+                            <select id="usuario" name="usuario" class="form-control" required>
+                                <option value="">Selecione quem comprou</option>
+                            </select>
+                        </div>
+
+                        <!-- 4. Descrição -->
+                        <div class="form-group form-group-full">
+                            <label for="descricao">Descrição*</label>
+                            <input type="text" id="descricao" name="descricao" class="form-control" required>
+                        </div>
+
+                        <!-- 5. Valor por parcela -->
+                        <div class="form-group">
+                            <label for="valor">Valor por parcela (R$)*</label>
+                            <input type="number" id="valor" name="valor" class="form-control" step="0.01" required>
+                        </div>
+
+                        <!-- 6. Número de parcelas -->
+                        <div class="form-group">
+                            <label for="parcelas">Número de parcelas*</label>
+                            <input type="number" id="parcelas" name="parcelas" class="form-control" min="1" value="1" required>
+                        </div>
+
+                        <!-- 7. Valor total (calculado automaticamente) -->
+                        <div class="form-group">
+                            <label for="valor_total">Valor Total (R$)</label>
+                            <input type="number" id="valor_total" name="valor_total" class="form-control" step="0.01" readonly>
+                        </div>
+
+                        <!-- 8. Categoria -->
+                        <div class="form-group">
+                            <label for="categoria">Categoria*</label>
+                            <input type="text" id="categoria" name="categoria" class="form-control" required>
+                        </div>
+
+                        <!-- 9. Data da primeira parcela -->
+                        <div class="form-group">
+                            <label for="data">Data da primeira parcela*</label>
+                            <input type="date" id="data" name="data" class="form-control" required>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" id="btn-salvar" class="btn btn-primary">Salvar Lançamento</button>
+                        <button type="button" id="btn-cancelar" class="btn btn-secondary" onclick="cancelarEdicao()" style="display: none;">Cancelar</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Lista de Lançamentos</h2>
                 </div>
-
-                <!-- 2. Cartão (segundo campo) -->
-                <div class="form-group">
-                    <label for="cartao">Cartão*</label>
-                    <select id="cartao" name="cartao" required>
-                        <option value="">Selecione um cartão</option>
-                    </select>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Tipo</th>
+                                <th>Descrição</th>
+                                <th>Categoria</th>
+                                <th>Cartão</th>
+                                <th>Usuário</th>
+                                <th>Parcela</th>
+                                <th>Valor</th>
+                                <th>ID Compra</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabela-lancamentos">
+                            <!-- Dados serão carregados via JavaScript -->
+                        </tbody>
+                    </table>
                 </div>
-
-                <!-- 3. Quem comprou (terceiro campo) -->
-                <div class="form-group">
-                    <label for="usuario">Quem comprou*</label>
-                    <select id="usuario" name="usuario" required>
-                        <option value="">Selecione quem comprou</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="descricao">Descrição*</label>
-                    <input type="text" id="descricao" name="descricao" required>
-                </div>
-
-                <!-- 4. Valor unitário -->
-                <div class="form-group">
-                    <label for="valor">Valor por parcela (R$)*</label>
-                    <input type="number" id="valor" name="valor" step="0.01" required>
-                </div>
-
-                <!-- 5. Prazo/Parcelas -->
-                <div class="form-group">
-                    <label for="parcelas">Número de parcelas*</label>
-                    <input type="number" id="parcelas" name="parcelas" min="1" value="1" required>
-                </div>
-
-                <!-- 6. Valor total (calculado automaticamente) -->
-                <div class="form-group">
-                    <label for="valor_total">Valor Total (R$)</label>
-                    <input type="number" id="valor_total" name="valor_total" step="0.01" readonly>
-                </div>
-
-                <div class="form-group">
-                    <label for="categoria">Categoria*</label>
-                    <input type="text" id="categoria" name="categoria" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="data">Data da primeira parcela*</label>
-                    <input type="date" id="data" name="data" required>
-                </div>
-
-                <button type="submit" id="btn-salvar">Salvar Lançamento</button>
-                <button type="button" id="btn-cancelar" onclick="cancelarEdicao()" style="display: none;">Cancelar</button>
-            </form>
-
-            <div class="tabela-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Data</th>
-                            <th>Tipo</th>
-                            <th>Descrição</th>
-                            <th>Categoria</th>
-                            <th>Cartão</th>
-                            <th>Usuário</th>
-                            <th>Parcela</th>
-                            <th>Valor</th>
-                            <th>ID Compra</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tabela-lancamentos">
-                    </tbody>
-                </table>
             </div>
         </main>
     </div>
