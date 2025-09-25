@@ -72,5 +72,33 @@
 
   <script type="module" src="js/firebase-config.js"></script>
   <script type="module" src="js/quitacoes.js"></script>
+  <script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const themeToggle = document.getElementById('theme-toggle');
+    const body = document.body;
+    
+    // Tema salvo
+    const saved = localStorage.getItem('theme') || 'light-theme';
+    body.className = saved;
+    updateBtn(saved);
+    
+    themeToggle.addEventListener('click', function() {
+      if (body.classList.contains('light-theme')) {
+        body.classList.replace('light-theme','dark-theme');
+        localStorage.setItem('theme','dark-theme');
+        updateBtn('dark-theme');
+      } else {
+        body.classList.replace('dark-theme','light-theme');
+        localStorage.setItem('theme','light-theme');
+        updateBtn('light-theme');
+      }
+    });
+    
+    function updateBtn(theme) {
+      themeToggle.textContent = theme==='dark-theme' ? '☀️ Modo Claro' : '🌙 Modo Escuro';
+    }
+  });
+</script>
+
 </body>
 </html>
