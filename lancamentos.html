@@ -158,5 +158,26 @@
   </main>
 
   <script type="module" src="js/lancamentos.js"></script>
+  <script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const btn = document.getElementById('theme-toggle');
+    const body = document.body;
+    const saved = localStorage.getItem('theme') || 'light-theme';
+    body.className = saved;
+    btn.textContent = saved === 'light-theme' ? '🌙 Modo Escuro' : '☀️ Modo Claro';
+    btn.addEventListener('click', () => {
+      if (body.classList.contains('light-theme')) {
+        body.classList.replace('light-theme', 'dark-theme');
+        localStorage.setItem('theme','dark-theme');
+        btn.textContent = '☀️ Modo Claro';
+      } else {
+        body.classList.replace('dark-theme', 'light-theme');
+        localStorage.setItem('theme','light-theme');
+        btn.textContent = '🌙 Modo Escuro';
+      }
+    });
+  });
+</script>
+
 </body>
 </html>
