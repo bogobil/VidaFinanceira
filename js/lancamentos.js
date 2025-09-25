@@ -27,7 +27,6 @@ async function carregarCartoes() {
     select.appendChild(opt);
   });
 }
-
 async function carregarUsuarios() {
   const select = document.getElementById('usuario');
   select.innerHTML = '<option value="">Selecione quem comprou</option>';
