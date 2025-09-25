@@ -1,94 +1,82 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cartões - Controle Meu Bolso</title>
+  <title>Cartões - Vida Financeira</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <header>
-    <div class="container">
-      <h1>Controle Meu Bolso</h1>
+  <div class="container">
+    <header>
       <nav>
         <ul>
           <li><a href="index.html">Dashboard</a></li>
           <li><a href="lancamentos.html">Lançamentos</a></li>
-          <li><a href="quitacoes.html">Quitações</a></li>
-          <li><a href="usuarios.html">Usuários</a></li>
           <li><a href="cartoes.html" class="active">Cartões</a></li>
-          <li><a href="bancos-bandeiras.html">Bancos e Bandeiras</a></li>
+          <li><a href="usuarios.html">Usuários</a></li>
+          <li><a href="bancos-bandeiras.html">Bancos/Bandeiras</a></li>
+          <li><a href="quitacoes.html">Quitações</a></li>
         </ul>
       </nav>
-    </div>
-  </header>
+    </header>
 
-  <main class="container">
-    <h2>Gerenciamento de Cartões</h2>
-    
-    <div class="card">
-      <div class="card-header">
-        <h3 class="card-title">Novo Cartão</h3>
-      </div>
-      <form id="form-cartao">
-        <div class="form-group">
-          <label for="nome">Nome do Cartão</label>
-          <input type="text" id="nome" class="form-control" required>
-        </div>
-        <div class="form-group">
-          <label for="ultimos_digitos">Últimos 4 Dígitos</label>
-          <input type="text" id="ultimos_digitos" class="form-control" maxlength="4" pattern="[0-9]{4}" required>
-        </div>
-        <div class="form-group">
-          <label for="banco">Banco</label>
-          <select id="banco" class="form-control" required>
-            <option value="">Selecione um banco</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label for="bandeira">Bandeira</label>
-          <select id="bandeira" class="form-control" required>
-            <option value="">Selecione uma bandeira</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label for="limite">Limite</label>
-          <input type="number" id="limite" class="form-control" step="0.01" required>
-        </div>
-        <div class="form-group">
-          <label for="vencimento">Dia do Vencimento</label>
-          <input type="number" id="vencimento" class="form-control" min="1" max="31" required>
-        </div>
-        <div class="form-group">
-          <label for="melhor_compra">Melhor Dia para Compra</label>
-          <input type="number" id="melhor_compra" class="form-control" min="1" max="31" required>
-        </div>
-        <div class="form-group">
-          <label>
-            <input type="checkbox" id="emprestado"> Cartão Emprestado
-          </label>
-        </div>
-        <div class="form-group" id="grupo_utilizador" style="display: none;">
-          <label for="utilizador">Utilizador Padrão</label>
-          <select id="utilizador" class="form-control">
-            <option value="">Selecione um utilizador</option>
-          </select>
-        </div>
-        <button type="submit" class="btn">Salvar</button>
-      </form>
-    </div>
+    <main>
+      <h1>Cartões</h1>
 
-    <div class="card">
-      <div class="card-header">
-        <h3 class="card-title">Lista de Cartões</h3>
+      <div class="card">
+        <form id="form-cartao" class="form">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="nome">Nome do Cartão*</label>
+              <input type="text" id="nome" name="nome" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label for="banco">Banco*</label>
+              <select id="banco" name="banco" class="form-control" required></select>
+            </div>
+            <div class="form-group">
+              <label for="bandeira">Bandeira*</label>
+              <select id="bandeira" name="bandeira" class="form-control" required></select>
+            </div>
+            <div class="form-group">
+              <label for="limite">Limite (R$)*</label>
+              <input type="number" id="limite" name="limite" class="form-control" step="0.01" required>
+            </div>
+            <div class="form-group">
+              <label for="limite_restante">Limite Restante (R$)</label>
+              <input type="number" id="limite_restante" name="limite_restante" class="form-control" readonly>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Salvar Cartão</button>
+            <button type="button" id="btn-cancelar" class="btn btn-secondary" onclick="cancelarEdicaoCartao()" style="display:none;">Cancelar</button>
+          </div>
+        </form>
       </div>
-      <div id="cartoes-container">
-        <!-- Preenchido via JavaScript -->
-      </div>
-    </div>
-  </main>
 
-  <script type="module" src="js/firebase-config.js"></script>
-  <script type="module" src="js/cartoes.js"></script>
+      <div class="card">
+        <div class="card-header"><h2 class="card-title">Lista de Cartões</h2></div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Banco</th>
+                <th>Bandeira</th>
+                <th>Nome</th>
+                <th>Limite</th>
+                <th>Usado</th>
+                <th>Disponível</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tabela-cartoes"></tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script type="module" src="js/cartoes-final.js"></script>
 </body>
 </html>
