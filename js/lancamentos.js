@@ -1,6 +1,3 @@
-Tipo, categoria, Forma de Pagtº (Pix, Dinheiro, Transferência, Cartão e Boleto (se cartão ou Pix, segue para informar qual o tipo (à vista, débito, crédito e QrCode), sendo tipo crédito escolhido abre opção para escolher o Prazo, se for outra escolha diferente de Crédito deixar "à vista" como padrão), Data (Padrão a data de hoje, porém podendo ser alterado), Quem comprou, valor da compra, mudar o nome de "Tipo de Cartão" para "Pagamento no" (Débito, Crédito) e Valor Total (é resultado da divisão do "Valor da Compra"/"Prazo"
-
-
 import { db } from './firebase-config.js';
 import {
   collection, addDoc, getDocs, updateDoc, deleteDoc, doc,
