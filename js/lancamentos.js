@@ -1,509 +1,148 @@
+// js/lancamentos-final-listas.js
 import { db } from './firebase-config.js';
-import { collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
+import {
+  collection, addDoc, getDocs, doc, updateDoc, deleteDoc,
+  query, orderBy
+} from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
 
 let lancamentoEditandoId = null;
 
-document.addEventListener('DOMContentLoaded', function() {
-    carregarLancamentos();
-    carregarCartoes();
-    carregarUsuarios();
-    
-    document.getElementById('form-lancamento').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        await salvarLancamento();
-    });
-
-    // Calcular valor total quando valor ou parcelas mudarem
-    document.getElementById('valor').addEventListener('input', calcularValorTotal);
-    document.getElementById('parcelas').addEventListener('input', calcularValorTotal);
+document.addEventListener('DOMContentLoaded', async () => {
+  await carregarCartoes();
+  await carregarUsuarios();
+  document.getElementById('form-lancamento').addEventListener('submit', salvarLancamento);
+  document.getElementById('valor').addEventListener('input', calcularValorTotal);
+  document.getElementById('parcelas').addEventListener('change', calcularValorTotal);
 });
-
-function calcularValorTotal() {
-    const valor = parseFloat(document.getElementById('valor').value) || 0;
-    const parcelas = parseInt(document.getElementById('parcelas').value) || 1;
-    const valorTotal = valor * parcelas;import { db } from './firebase-config.js';
-import { collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
-
-let lancamentoEditandoId = null;
-
-document.addEventListener('DOMContentLoaded', function() {
-    carregarLancamentos();
-    carregarCartoes();
-    carregarUsuarios();
-    
-    document.getElementById('form-lancamento').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        await salvarLancamento();
-    });
-
-    // Calcular valor total quando valor ou parcelas mudarem
-    document.getElementById('valor').addEventListener('input', calcularValorTotal);
-    document.getElementById('parcelas').addEventListener('input', calcularValorTotal);
-});
-
-function calcularValorTotal() {
-    const valor = parseFloat(document.getElementById('valor').value) || 0;
-    const parcelas = parseInt(document.getElementById('parcelas').value) || 1;
-    const valorTotal = valor * parcelas;
-    document.getElementById('valor_total').value = valorTotal.toFixed(2);
-}
 
 async function carregarCartoes() {
-    try {
-        const cartoesRef = collection(db, 'cartoes');
-        const querySnapshot = await getDocs(cartoesRef);
-        const selectCartao = document.getElementById('cartao');
-        
-        // Limpar opções existentes (exceto a primeira)
-        selectCartao.innerHTML = '<option value="">Selecione um cartão</option>';
-        
-        querySnapshot.forEach(doc => {
-            const cartao = doc.data();
-            const option = document.createElement('option');
-            option.value = doc.id;
-            option.textContent = `${cartao.nome} - ${cartao.banco}`;
-            selectCartao.appendChild(option);
-        });
-    } catch (error) {
-        console.error("Erro ao carregar cartões:", error);
-    }
+  const select = document.getElementById('cartao');
+  select.innerHTML = '<option value="">Selecione um cartão</option>';
+  const snap = await getDocs(collection(db, 'cartoes'));
+  snap.forEach(d => {
+    const { nome } = d.data();
+    const opt = document.createElement('option');
+    opt.value = d.id;
+    opt.textContent = nome;
+    select.appendChild(opt);
+  });
 }
 
 async function carregarUsuarios() {
-    try {
-        const usuariosRef = collection(db, 'usuarios');
-        const querySnapshot = await getDocs(usuariosRef);
-        const selectUsuario = document.getElementById('usuario');
-        
-        // Limpar opções existentes (exceto a primeira)
-        selectUsuario.innerHTML = '<option value="">Selecione quem comprou</option>';
-        
-        querySnapshot.forEach(doc => {
-            const usuario = doc.data();
-            const option = document.createElement('option');
-            option.value = doc.id;
-            option.textContent = usuario.nome;
-            selectUsuario.appendChild(option);
-        });
-    } catch (error) {
-        console.error("Erro ao carregar usuários:", error);
-    }
+  const select = document.getElementById('usuario');
+  select.innerHTML = '<option value="">Selecione quem comprou</option>';
+  const snap = await getDocs(collection(db, 'usuarios'));
+  snap.forEach(d => {
+    const { nome } = d.data();
+    const opt = document.createElement('option');
+    opt.value = d.id;
+    opt.textContent = nome;
+    select.appendChild(opt);
+  });
 }
 
 async function carregarLancamentos() {
-    try {
-        const lancamentosRef = collection(db, 'lancamentos');
-        const q = query(lancamentosRef, orderBy("data", "desc"));
-        const querySnapshot = await getDocs(q);
-        const tabela = document.getElementById('tabela-lancamentos');
-        
-        tabela.innerHTML = '';
-        
-        querySnapshot.forEach(doc => {
-            const lancamento = doc.data();
-            const row = tabela.insertRow();
-            
-            row.innerHTML = `
-                <td>${formatarData(lancamento.data)}</td>
-                <td><span class="badge ${lancamento.tipo}">${lancamento.tipo}</span></td>
-                <td>${lancamento.descricao}</td>
-                <td>${lancamento.categoria}</td>
-                <td>${lancamento.cartao_nome || 'N/A'}</td>
-                <td>${lancamento.usuario_nome || 'N/A'}</td>
-                <td>${lancamento.parcela_atual || 'N/A'}/${lancamento.total_parcelas || 'N/A'}</td>
-                <td>${formatarMoeda(lancamento.valor)}</td>
-                <td><small>${lancamento.id_compra || 'N/A'}</small></td>
-                <td class="acoes">
-                    <button onclick="editarLancamento('${doc.id}')" class="btn-editar">Editar</button>
-                    <button onclick="excluirLancamento('${doc.id}')" class="btn-excluir">Excluir</button>
-                </td>
-            `;
-        });
-    } catch (error) {
-        console.error("Erro ao carregar lançamentos:", error);
-    }
+  const tabela = document.getElementById('tabela-lancamentos');
+  tabela.innerHTML = '';
+  const snap = await getDocs(query(collection(db, 'lancamentos'), orderBy('data','desc')));
+  snap.forEach(d => {
+    const l = d.data();
+    const row = tabela.insertRow();
+    row.innerHTML = `
+      <td>${formatarData(l.data)}</td><td><span class="badge ${l.tipo}">${l.tipo}</span></td>
+      <td>${l.descricao}</td><td>${l.categoria}</td>
+      <td>${l.cartao_nome}</td><td>${l.usuario_nome}</td>
+      <td>${l.parcela_atual}/${l.total_parcelas}</td>
+      <td>${formatarMoeda(l.valor)}</td><td>${l.id_compra}</td>
+      <td>
+        <button onclick="editarLancamento('${d.id}')" class="btn btn-warning btn-editar">Editar</button>
+        <button onclick="excluirLancamento('${d.id}')" class="btn btn-danger btn-excluir">Excluir</button>
+      </td>`;
+  });
 }
 
-async function salvarLancamento() {
-    try {
-        const tipo = document.getElementById('tipo').value;
-        const cartaoId = document.getElementById('cartao').value;
-        const usuarioId = document.getElementById('usuario').value;
-        const descricao = document.getElementById('descricao').value;
-        const valor = parseFloat(document.getElementById('valor').value);
-        const parcelas = parseInt(document.getElementById('parcelas').value);
-        const categoria = document.getElementById('categoria').value;
-        const data = document.getElementById('data').value;
+async function salvarLancamento(e) {
+  e.preventDefault();
+  const tipo = document.getElementById('tipo').value;
+  const cartaoId = document.getElementById('cartao').value;
+  const usuarioId = document.getElementById('usuario').value;
+  const descricao = document.getElementById('descricao').value;
+  const valor = parseFloat(document.getElementById('valor').value);
+  const parcelas = parseInt(document.getElementById('parcelas').value);
+  const categoria = document.getElementById('categoria').value;
+  const data = document.getElementById('data').value;
 
-        // Buscar nome do cartão selecionado
-        const cartoesSnapshot = await getDocs(collection(db, 'cartoes'));
-        let cartaoNome = '';
-        
-        cartoesSnapshot.forEach(docCartao => {
-            if (docCartao.id === cartaoId) {
-                cartaoNome = docCartao.data().nome;
-            }
-        });
+  const cartaoSnap = await getDocs(query(collection(db,'cartoes'), where('__name__','==',cartaoId)));
+  const usuarioSnap = await getDocs(query(collection(db,'usuarios'), where('__name__','==',usuarioId)));
+  let cartaoNome='', usuarioNome='';
+  cartaoSnap.forEach(s=>cartaoNome=s.data().nome);
+  usuarioSnap.forEach(s=>usuarioNome=s.data().nome);
 
-        // Buscar nome do usuário selecionado
-        const usuariosSnapshot = await getDocs(collection(db, 'usuarios'));
-        let usuarioNome = '';
-        
-        usuariosSnapshot.forEach(docUsuario => {
-            if (docUsuario.id === usuarioId) {
-                usuarioNome = docUsuario.data().nome;
-            }
-        });
+  const idCompra = `compra_${Date.now()}`;
+  const promises=[];
 
-        // Gerar ID único para a compra
-        const idCompra = `compra_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  for(let i=1;i<=parcelas;i++){
+    const d = new Date(data); d.setMonth(d.getMonth()+i-1);
+    const obj = {
+      tipo, cartao_id:cartaoId, cartao_nome:cartaoNome,
+      usuario_id:usuarioId, usuario_nome:usuarioNome,
+      descricao: `${descricao} - Parcela ${i}/${parcelas}`,
+      valor, categoria, data: d.toISOString().split('T')[0],
+      parcela_atual:i, total_parcelas:parcelas, id_compra:idCompra
+    };
+    promises.push(!lancamentoEditandoId 
+      ? addDoc(collection(db,'lancamentos'),obj)
+      : i===1 && updateDoc(doc(db,'lancamentos',lancamentoEditandoId),obj)
+    );
+  }
 
-        // Criar uma entrada para cada parcela
-        const promises = [];
-        
-        for (let i = 1; i <= parcelas; i++) {
-            // Calcular data de cada parcela (assumindo mensalidade)
-            const dataAtual = new Date(data);
-            dataAtual.setMonth(dataAtual.getMonth() + (i - 1));
-            const dataParcela = dataAtual.toISOString().split('T')[0];
-
-            const lancamentoParcela = {
-                tipo: tipo,
-                cartao_id: cartaoId,
-                cartao_nome: cartaoNome,
-                usuario_id: usuarioId,
-                usuario_nome: usuarioNome,
-                descricao: `${descricao} - Parcela ${i}/${parcelas}`,
-                valor: valor,
-                categoria: categoria,
-                data: dataParcela,
-                parcela_atual: i,
-                total_parcelas: parcelas,
-                id_compra: idCompra,
-                data_criacao: new Date().toISOString()
-            };
-
-            if (lancamentoEditandoId && i === 1) {
-                // Se estiver editando, atualizar apenas a primeira parcela
-                promises.push(updateDoc(doc(db, 'lancamentos', lancamentoEditandoId), lancamentoParcela));
-            } else if (!lancamentoEditandoId) {
-                // Se for novo lançamento, adicionar todas as parcelas
-                promises.push(addDoc(collection(db, 'lancamentos'), lancamentoParcela));
-            }
-        }
-
-        await Promise.all(promises);
-
-        // Limpar formulário e recarregar tabela
-        document.getElementById('form-lancamento').reset();
-        document.getElementById('valor_total').value = '';
-        lancamentoEditandoId = null;
-        document.getElementById('btn-salvar').textContent = 'Salvar Lançamento';
-        document.getElementById('btn-cancelar').style.display = 'none';
-
-        await carregarLancamentos();
-        
-        alert(`Lançamento salvo com sucesso! ${parcelas} parcela(s) criada(s) para ${usuarioNome}.`);
-    } catch (error) {
-        console.error("Erro ao salvar lançamento:", error);
-        alert("Erro ao salvar lançamento: " + error.message);
-    }
+  await Promise.all(promises);
+  document.getElementById('form-lancamento').reset();
+  lancamentoEditandoId=null;
+  carregarLancamentos();
 }
 
-async function editarLancamento(id) {
-    try {
-        const lancamentoRef = doc(db, 'lancamentos', id);
-        const querySnapshot = await getDocs(collection(db, 'lancamentos'));
-        
-        querySnapshot.forEach(docLancamento => {
-            if (docLancamento.id === id) {
-                const lancamento = docLancamento.data();
-                
-                document.getElementById('tipo').value = lancamento.tipo;
-                document.getElementById('cartao').value = lancamento.cartao_id;
-                document.getElementById('usuario').value = lancamento.usuario_id;
-                document.getElementById('descricao').value = lancamento.descricao.replace(/ - Parcela \d+\/\d+$/, '');
-                document.getElementById('valor').value = lancamento.valor;
-                document.getElementById('parcelas').value = lancamento.total_parcelas || 1;
-                document.getElementById('categoria').value = lancamento.categoria;
-                document.getElementById('data').value = lancamento.data;
-                
-                calcularValorTotal();
-                
-                lancamentoEditandoId = id;
-                document.getElementById('btn-salvar').textContent = 'Atualizar Lançamento';
-                document.getElementById('btn-cancelar').style.display = 'inline-block';
-            }
-        });
-    } catch (error) {
-        console.error("Erro ao carregar lançamento para edição:", error);
-    }
+function calcularValorTotal(){
+  const v=parseFloat(document.getElementById('valor').value)||0;
+  const p=parseInt(document.getElementById('parcelas').value)||1;
+  document.getElementById('valor_total').value = (v*p).toFixed(2);
 }
 
-async function excluirLancamento(id) {
-    if (confirm('Tem certeza que deseja excluir este lançamento?')) {
-        try {
-            await deleteDoc(doc(db, 'lancamentos', id));
-            await carregarLancamentos();
-            alert("Lançamento excluído com sucesso!");
-        } catch (error) {
-            console.error("Erro ao excluir lançamento:", error);
-            alert("Erro ao excluir lançamento: " + error.message);
-        }
-    }
+async function editarLancamento(id){
+  lancamentoEditandoId=id;
+  const snap = await getDocs(query(collection(db,'lancamentos'), where('__name__','==',id)));
+  snap.forEach(s=>{
+    const l=s.data();
+    document.getElementById('tipo').value=l.tipo;
+    document.getElementById('cartao').value=l.cartao_id;
+    document.getElementById('usuario').value=l.usuario_id;
+    document.getElementById('descricao').value=l.descricao.replace(/ - Parcela.*$/,'');
+    document.getElementById('valor').value=l.valor;
+    document.getElementById('parcelas').value=l.total_parcelas;
+    document.getElementById('categoria').value=l.categoria;
+    document.getElementById('data').value=l.data;
+    calcularValorTotal();
+    document.getElementById('btn-cancelar').style.display='inline-block';
+  });
 }
 
-function cancelarEdicao() {
-    document.getElementById('form-lancamento').reset();
-    document.getElementById('valor_total').value = '';
-    lancamentoEditandoId = null;
-    document.getElementById('btn-salvar').textContent = 'Salvar Lançamento';
-    document.getElementById('btn-cancelar').style.display = 'none';
+async function excluirLancamento(id){
+  if(confirm('Excluir?')){ await deleteDoc(doc(db,'lancamentos',id)); carregarLancamentos(); }
 }
 
-function formatarMoeda(valor) {
-    return new Intl.NumberFormat('pt-BR', {
-        style: 'currency',
-        currency: 'BRL'
-    }).format(valor);
+function cancelarEdicao(){
+  lancamentoEditandoId=null;
+  document.getElementById('form-lancamento').reset();
+  document.getElementById('btn-cancelar').style.display='none';
 }
 
-function formatarData(data) {
-    return new Date(data + 'T00:00:00').toLocaleDateString('pt-BR');
+function formatarMoeda(v){
+  return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v);
 }
 
-// Tornar funções globais para uso nos botões HTML
-window.editarLancamento = editarLancamento;
-window.excluirLancamento = excluirLancamento;
-window.cancelarEdicao = cancelarEdicao;
-    document.getElementById('valor_total').value = valorTotal.toFixed(2);
+function formatarData(d){
+  return new Date(d+'T00:00:00').toLocaleDateString('pt-BR');
 }
 
-async function carregarCartoes() {
-    try {
-        const cartoesRef = collection(db, 'cartoes');
-        const querySnapshot = await getDocs(cartoesRef);
-        const selectCartao = document.getElementById('cartao');
-        
-        // Limpar opções existentes (exceto a primeira)
-        selectCartao.innerHTML = '<option value="">Selecione um cartão</option>';
-        
-        querySnapshot.forEach(doc => {
-            const cartao = doc.data();
-            const option = document.createElement('option');
-            option.value = doc.id;
-            option.textContent = `${cartao.nome} - ${cartao.banco}`;
-            selectCartao.appendChild(option);
-        });
-    } catch (error) {
-        console.error("Erro ao carregar cartões:", error);
-    }
-}
-
-async function carregarUsuarios() {
-    try {
-        const usuariosRef = collection(db, 'usuarios');
-        const querySnapshot = await getDocs(usuariosRef);
-        const selectUsuario = document.getElementById('usuario');
-        
-        // Limpar opções existentes (exceto a primeira)
-        selectUsuario.innerHTML = '<option value="">Selecione quem comprou</option>';
-        
-        querySnapshot.forEach(doc => {
-            const usuario = doc.data();
-            const option = document.createElement('option');
-            option.value = doc.id;
-            option.textContent = usuario.nome;
-            selectUsuario.appendChild(option);
-        });
-    } catch (error) {
-        console.error("Erro ao carregar usuários:", error);
-    }
-}
-
-async function carregarLancamentos() {
-    try {
-        const lancamentosRef = collection(db, 'lancamentos');
-        const q = query(lancamentosRef, orderBy("data", "desc"));
-        const querySnapshot = await getDocs(q);
-        const tabela = document.getElementById('tabela-lancamentos');
-        
-        tabela.innerHTML = '';
-        
-        querySnapshot.forEach(doc => {
-            const lancamento = doc.data();
-            const row = tabela.insertRow();
-            
-            row.innerHTML = `
-                <td>${formatarData(lancamento.data)}</td>
-                <td><span class="badge ${lancamento.tipo}">${lancamento.tipo}</span></td>
-                <td>${lancamento.descricao}</td>
-                <td>${lancamento.categoria}</td>
-                <td>${lancamento.cartao_nome || 'N/A'}</td>
-                <td>${lancamento.usuario_nome || 'N/A'}</td>
-                <td>${lancamento.parcela_atual || 'N/A'}/${lancamento.total_parcelas || 'N/A'}</td>
-                <td>${formatarMoeda(lancamento.valor)}</td>
-                <td><small>${lancamento.id_compra || 'N/A'}</small></td>
-                <td class="acoes">
-                    <button onclick="editarLancamento('${doc.id}')" class="btn-editar">Editar</button>
-                    <button onclick="excluirLancamento('${doc.id}')" class="btn-excluir">Excluir</button>
-                </td>
-            `;
-        });
-    } catch (error) {
-        console.error("Erro ao carregar lançamentos:", error);
-    }
-}
-
-async function salvarLancamento() {
-    try {
-        const tipo = document.getElementById('tipo').value;
-        const cartaoId = document.getElementById('cartao').value;
-        const usuarioId = document.getElementById('usuario').value;
-        const descricao = document.getElementById('descricao').value;
-        const valor = parseFloat(document.getElementById('valor').value);
-        const parcelas = parseInt(document.getElementById('parcelas').value);
-        const categoria = document.getElementById('categoria').value;
-        const data = document.getElementById('data').value;
-
-        // Buscar nome do cartão selecionado
-        const cartoesSnapshot = await getDocs(collection(db, 'cartoes'));
-        let cartaoNome = '';
-        
-        cartoesSnapshot.forEach(docCartao => {
-            if (docCartao.id === cartaoId) {
-                cartaoNome = docCartao.data().nome;
-            }
-        });
-
-        // Buscar nome do usuário selecionado
-        const usuariosSnapshot = await getDocs(collection(db, 'usuarios'));
-        let usuarioNome = '';
-        
-        usuariosSnapshot.forEach(docUsuario => {
-            if (docUsuario.id === usuarioId) {
-                usuarioNome = docUsuario.data().nome;
-            }
-        });
-
-        // Gerar ID único para a compra
-        const idCompra = `compra_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-
-        // Criar uma entrada para cada parcela
-        const promises = [];
-        
-        for (let i = 1; i <= parcelas; i++) {
-            // Calcular data de cada parcela (assumindo mensalidade)
-            const dataAtual = new Date(data);
-            dataAtual.setMonth(dataAtual.getMonth() + (i - 1));
-            const dataParcela = dataAtual.toISOString().split('T')[0];
-
-            const lancamentoParcela = {
-                tipo: tipo,
-                cartao_id: cartaoId,
-                cartao_nome: cartaoNome,
-                usuario_id: usuarioId,
-                usuario_nome: usuarioNome,
-                descricao: `${descricao} - Parcela ${i}/${parcelas}`,
-                valor: valor,
-                categoria: categoria,
-                data: dataParcela,
-                parcela_atual: i,
-                total_parcelas: parcelas,
-                id_compra: idCompra,
-                data_criacao: new Date().toISOString()
-            };
-
-            if (lancamentoEditandoId && i === 1) {
-                // Se estiver editando, atualizar apenas a primeira parcela
-                promises.push(updateDoc(doc(db, 'lancamentos', lancamentoEditandoId), lancamentoParcela));
-            } else if (!lancamentoEditandoId) {
-                // Se for novo lançamento, adicionar todas as parcelas
-                promises.push(addDoc(collection(db, 'lancamentos'), lancamentoParcela));
-            }
-        }
-
-        await Promise.all(promises);
-
-        // Limpar formulário e recarregar tabela
-        document.getElementById('form-lancamento').reset();
-        document.getElementById('valor_total').value = '';
-        lancamentoEditandoId = null;
-        document.getElementById('btn-salvar').textContent = 'Salvar Lançamento';
-        document.getElementById('btn-cancelar').style.display = 'none';
-
-        await carregarLancamentos();
-        
-        alert(`Lançamento salvo com sucesso! ${parcelas} parcela(s) criada(s) para ${usuarioNome}.`);
-    } catch (error) {
-        console.error("Erro ao salvar lançamento:", error);
-        alert("Erro ao salvar lançamento: " + error.message);
-    }
-}
-
-async function editarLancamento(id) {
-    try {
-        const lancamentoRef = doc(db, 'lancamentos', id);
-        const querySnapshot = await getDocs(collection(db, 'lancamentos'));
-        
-        querySnapshot.forEach(docLancamento => {
-            if (docLancamento.id === id) {
-                const lancamento = docLancamento.data();
-                
-                document.getElementById('tipo').value = lancamento.tipo;
-                document.getElementById('cartao').value = lancamento.cartao_id;
-                document.getElementById('usuario').value = lancamento.usuario_id;
-                document.getElementById('descricao').value = lancamento.descricao.replace(/ - Parcela \d+\/\d+$/, '');
-                document.getElementById('valor').value = lancamento.valor;
-                document.getElementById('parcelas').value = lancamento.total_parcelas || 1;
-                document.getElementById('categoria').value = lancamento.categoria;
-                document.getElementById('data').value = lancamento.data;
-                
-                calcularValorTotal();
-                
-                lancamentoEditandoId = id;
-                document.getElementById('btn-salvar').textContent = 'Atualizar Lançamento';
-                document.getElementById('btn-cancelar').style.display = 'inline-block';
-            }
-        });
-    } catch (error) {
-        console.error("Erro ao carregar lançamento para edição:", error);
-    }
-}
-
-async function excluirLancamento(id) {
-    if (confirm('Tem certeza que deseja excluir este lançamento?')) {
-        try {
-            await deleteDoc(doc(db, 'lancamentos', id));
-            await carregarLancamentos();
-            alert("Lançamento excluído com sucesso!");
-        } catch (error) {
-            console.error("Erro ao excluir lançamento:", error);
-            alert("Erro ao excluir lançamento: " + error.message);
-        }
-    }
-}
-
-function cancelarEdicao() {
-    document.getElementById('form-lancamento').reset();
-    document.getElementById('valor_total').value = '';
-    lancamentoEditandoId = null;
-    document.getElementById('btn-salvar').textContent = 'Salvar Lançamento';
-    document.getElementById('btn-cancelar').style.display = 'none';
-}
-
-function formatarMoeda(valor) {
-    return new Intl.NumberFormat('pt-BR', {
-        style: 'currency',
-        currency: 'BRL'
-    }).format(valor);
-}
-
-function formatarData(data) {
-    return new Date(data + 'T00:00:00').toLocaleDateString('pt-BR');
-}
-
-// Tornar funções globais para uso nos botões HTML
-window.editarLancamento = editarLancamento;
-window.excluirLancamento = excluirLancamento;
-window.cancelarEdicao = cancelarEdicao;
+window.editarLancamento=editarLancamento;
+window.excluirLancamento=excluirLancamento;
