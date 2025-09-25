@@ -1,9 +1,11 @@
 import { db } from './firebase-config.js';
-import { collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, where, orderBy } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
+import {
+  collection, addDoc, getDocs, doc, updateDoc, deleteDoc,
+  query, where
+} from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
 
 let cartaoEditandoId = null;
 
-// Ao carregar a página
 document.addEventListener('DOMContentLoaded', async () => {
   await carregarBancos();
   await carregarBandeiras();
@@ -11,25 +13,41 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('form-cartao').addEventListener('submit', salvarCartao);
 });
 
-// Carregar bancos e bandeiras (mesma lógica atual)
 async function carregarBancos() {
-  // ... código existente para popular #banco select
+  const selectBanco = document.getElementById('banco');
+  selectBanco.innerHTML = '<option value="">Selecione um banco</option>';
+  const snapshot = await getDocs(collection(db, 'bancos'));
+  snapshot.forEach(docSnap => {
+    const { nome } = docSnap.data();
+    const opt = document.createElement('option');
+    opt.value = docSnap.id;
+    opt.textContent = nome;
+    selectBanco.appendChild(opt);
+  });
 }
+
 async function carregarBandeiras() {
-  // ... código existente para popular #bandeira select
+  const selectBandeira = document.getElementById('bandeira');
+  selectBandeira.innerHTML = '<option value="">Selecione uma bandeira</option>';
+  const snapshot = await getDocs(collection(db, 'bandeiras'));
+  snapshot.forEach(docSnap => {
+    const { nome } = docSnap.data();
+    const opt = document.createElement('option');
+    opt.value = docSnap.id;
+    opt.textContent = nome;
+    selectBandeira.appendChild(opt);
+  });
 }
 
 async function carregarCartoes() {
   const tabela = document.getElementById('tabela-cartoes');
   tabela.innerHTML = '';
-
-  // Buscar todos cartões
   const cartoesSnapshot = await getDocs(collection(db, 'cartoes'));
 
   for (const docCartao of cartoesSnapshot.docs) {
     const cartao = docCartao.data();
     const cartaoId = docCartao.id;
-    // Calcular soma dos lançamentos relacionados ao cartão
+
     const lancQuery = query(
       collection(db, 'lancamentos'),
       where('cartao_id', '==', cartaoId)
@@ -40,11 +58,10 @@ async function carregarCartoes() {
 
     const restante = cartao.limite - somaLanc;
 
-    // Criar linha na tabela
     const row = tabela.insertRow();
     row.innerHTML = `
-      <td>${cartao.banco}</td>
-      <td>${cartao.bandeira}</td>
+      <td>${cartao.banco_nome || cartao.banco}</td>
+      <td>${cartao.bandeira_nome || cartao.bandeira}</td>
       <td>${cartao.nome}</td>
       <td>${formatarMoeda(cartao.limite)}</td>
       <td>${formatarMoeda(somaLanc)}</td>
@@ -60,24 +77,45 @@ async function carregarCartoes() {
 async function salvarCartao(e) {
   e.preventDefault();
   const nome = document.getElementById('nome').value;
-  const banco = document.getElementById('banco').value;
-  const bandeira = document.getElementById('bandeira').value;
+  const bancoId = document.getElementById('banco').value;
+  const bandeiraId = document.getElementById('bandeira').value;
   const limite = parseFloat(document.getElementById('limite').value);
 
+  // Opcional: buscar nomes para armazenar no documento
+  const bancoSnap = await getDocs(query(collection(db, 'bancos'), where('__name__','==',bancoId)));
+  const bandeiraSnap = await getDocs(query(collection(db, 'bandeiras'), where('__name__','==',bandeiraId)));
+  let bancoNome = '', bandeiraNome = '';
+  bancoSnap.forEach(s => bancoNome = s.data().nome);
+  bandeiraSnap.forEach(s => bandeiraNome = s.data().nome);
+
+  const data = { nome, banco: bancoId, banco_nome: bancoNome, bandeira: bandeiraId, bandeira_nome: bandeiraNome, limite };
+
   if (cartaoEditandoId) {
-    await updateDoc(doc(db, 'cartoes', cartaoEditandoId), { nome, banco, bandeira, limite });
+    await updateDoc(doc(db, 'cartoes', cartaoEditandoId), data);
     cartaoEditandoId = null;
   } else {
-    await addDoc(collection(db, 'cartoes'), { nome, banco, bandeira, limite });
+    await addDoc(collection(db, 'cartoes'), data);
   }
 
   document.getElementById('form-cartao').reset();
   await carregarCartoes();
 }
 
-function editarCartao(id) {
+function formatarMoeda(valor) {
+  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor);
+}
+
+async function editarCartao(id) {
   cartaoEditandoId = id;
-  // carregar dados no formulário para edição
+  const docSnap = await getDocs(query(collection(db, 'cartoes'), where('__name__','==',id)));
+  docSnap.forEach(s => {
+    const c = s.data();
+    document.getElementById('nome').value = c.nome;
+    document.getElementById('banco').value = c.banco;
+    document.getElementById('bandeira').value = c.bandeira;
+    document.getElementById('limite').value = c.limite;
+  });
+  document.getElementById('btn-cancelar').style.display = 'inline-block';
 }
 
 async function excluirCartao(id) {
@@ -87,11 +125,8 @@ async function excluirCartao(id) {
   }
 }
 
-function formatarMoeda(valor) {
-  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor);
-}
-
 function cancelarEdicaoCartao() {
   cartaoEditandoId = null;
   document.getElementById('form-cartao').reset();
+  document.getElementById('btn-cancelar').style.display = 'none';
 }
