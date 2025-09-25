@@ -1,69 +1,155 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Controle Meu Bolso - Dashboard</title>
+  <title>Dashboard - Vida Financeira</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
+<body class="light-theme">
   <header>
-    <div class="container">
-      <h1>Controle Meu Bolso</h1>
-      <nav>
-  <ul>
-    <li><a href="index.html" class="active">Dashboard</a></li>
-    <li><a href="lancamentos.html">Lançamentos</a></li>
-    <li><a href="quitacoes.html">Quitações</a></li>
-    <li><a href="usuarios.html">Usuários</a></li>
-    <li><a href="cartoes.html">Cartões</a></li>
-    <li><a href="bancos-bandeiras.html">Bancos e Bandeiras</a></li>
-  </ul>
-</nav>
+    <div class="header-content">
+      <h1>💰 Vida Financeira</h1>
+      <div class="header-actions">
+        <button id="theme-toggle" class="theme-btn">🌙 Dark Mode</button>
+      </div>
     </div>
   </header>
 
-  <main class="container">
-    <h2>Dashboard Financeiro</h2>
-    
-    <div class="dashboard">
-      <div class="dashboard-card">
-        <h3 id="total-receitas">R$ 0,00</h3>
-        <p>Total de Receitas</p>
-      </div>
-      <div class="dashboard-card">
-        <h3 id="total-despesas">R$ 0,00</h3>
-        <p>Total de Despesas</p>
-      </div>
-      <div class="dashboard-card">
-        <h3 id="saldo">R$ 0,00</h3>
-        <p>Saldo Atual</p>
-      </div>
-    </div>
+  <nav class="mobile-nav">
+    <ul>
+      <li><a href="index.html" class="nav-link active">📊 Dashboard</a></li>
+      <li><a href="lancamentos.html" class="nav-link">💸 Lançamentos</a></li>
+      <li><a href="cartoes.html" class="nav-link">💳 Cartões</a></li>
+      <li><a href="usuarios.html" class="nav-link">👥 Usuários</a></li>
+      <li><a href="bancos-bandeiras.html" class="nav-link">🏦 Bancos</a></li>
+      <li><a href="quitacoes.html" class="nav-link">✅ Quitações</a></li>
+    </ul>
+  </nav>
 
-    <div class="card">
-      <div class="card-header">
-        <h3 class="card-title">Lançamentos Recentes</h3>
+  <main class="main-content">
+    <section class="welcome-section">
+      <h2>Bem-vindo ao seu Dashboard</h2>
+      <p class="subtitle">Acompanhe suas finanças de forma inteligente</p>
+    </section>
+
+    <section class="cards-section">
+      <div class="financial-card balance-card">
+        <div class="card-header">
+          <h3>💰 Saldo Total</h3>
+          <span class="card-icon">📈</span>
+        </div>
+        <div class="card-value" id="saldo-total">
+          R$ 0,00
+        </div>
+        <div class="card-info">
+          <small>Atualizado em tempo real</small>
+        </div>
       </div>
-      <div class="table-container">
-        <table>
-          <thead>
-            <tr>
-              <th>Descrição</th>
-              <th>Valor</th>
-              <th>Tipo</th>
-              <th>Data</th>
-            </tr>
-          </thead>
-          <tbody id="tabela-lancamentos-recentes">
-            <!-- Preenchido via JavaScript -->
-          </tbody>
-        </table>
+
+      <div class="financial-card income-card">
+        <div class="card-header">
+          <h3>💵 Receitas do Mês</h3>
+          <span class="card-icon">⬆️</span>
+        </div>
+        <div class="card-value" id="receitas-mes">
+          R$ 0,00
+        </div>
+        <div class="card-info">
+          <small>Total de entradas</small>
+        </div>
       </div>
-    </div>
+
+      <div class="financial-card expense-card">
+        <div class="card-header">
+          <h3>💸 Despesas do Mês</h3>
+          <span class="card-icon">⬇️</span>
+        </div>
+        <div class="card-value" id="despesas-mes">
+          R$ 0,00
+        </div>
+        <div class="card-info">
+          <small>Total de gastos</small>
+        </div>
+      </div>
+
+      <div class="financial-card limit-card">
+        <div class="card-header">
+          <h3>💳 Limite Disponível</h3>
+          <span class="card-icon">🔒</span>
+        </div>
+        <div class="card-value" id="limite-disponivel">
+          R$ 0,00
+        </div>
+        <div class="card-info">
+          <small>Cartões de crédito</small>
+        </div>
+      </div>
+    </section>
+
+    <section class="recent-transactions">
+      <div class="section-header">
+        <h3>📋 Últimas Transações</h3>
+        <a href="lancamentos.html" class="view-all-btn">Ver todas</a>
+      </div>
+      <div class="transactions-list" id="transacoes-recentes">
+        <div class="empty-state">
+          <p>Nenhuma transação encontrada</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="quick-actions">
+      <h3>⚡ Ações Rápidas</h3>
+      <div class="action-buttons">
+        <a href="lancamentos.html" class="action-btn">
+          <span class="action-icon">➕</span>
+          <span>Novo Lançamento</span>
+        </a>
+        <a href="cartoes.html" class="action-btn">
+          <span class="action-icon">💳</span>
+          <span>Gerenciar Cartões</span>
+        </a>
+        <a href="usuarios.html" class="action-btn">
+          <span class="action-icon">👤</span>
+          <span>Usuários</span>
+        </a>
+      </div>
+    </section>
   </main>
 
-  <script type="module" src="js/firebase-config.js"></script>
   <script type="module" src="js/dashboard.js"></script>
+  <script>
+    // Theme toggle functionality
+    document.addEventListener('DOMContentLoaded', function() {
+      const themeToggle = document.getElementById('theme-toggle');
+      const body = document.body;
+      
+      // Check for saved theme
+      const savedTheme = localStorage.getItem('theme') || 'light-theme';
+      body.className = savedTheme;
+      updateThemeButton(savedTheme);
+      
+      themeToggle.addEventListener('click', function() {
+        if (body.classList.contains('light-theme')) {
+          body.classList.replace('light-theme', 'dark-theme');
+          localStorage.setItem('theme', 'dark-theme');
+          updateThemeButton('dark-theme');
+        } else {
+          body.classList.replace('dark-theme', 'light-theme');
+          localStorage.setItem('theme', 'light-theme');
+          updateThemeButton('light-theme');
+        }
+      });
+      
+      function updateThemeButton(theme) {
+        if (theme === 'dark-theme') {
+          themeToggle.innerHTML = '☀️ Light Mode';
+        } else {
+          themeToggle.innerHTML = '🌙 Dark Mode';
+        }
+      }
+    });
+  </script>
 </body>
 </html>
