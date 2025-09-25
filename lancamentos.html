@@ -1,255 +1,220 @@
-import { db } from './firebase-config.js';
-import { collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lançamentos - Vida Financeira</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Dashboard</a></li>
+                    <li><a href="lancamentos.html" class="active">Lançamentos</a></li>
+                    <li><a href="cartoes.html">Cartões</a></li>
+                    <li><a href="usuarios.html">Usuários</a></li>
+                    <li><a href="bancos-bandeiras.html">Bancos/Bandeiras</a></li>
+                    <li><a href="quitacoes.html">Quitações</a></li>
+                </ul>
+            </nav>
+        </header>
 
-let lancamentoEditandoId = null;
-
-document.addEventListener('DOMContentLoaded', function() {
-    carregarLancamentos();
-    carregarCartoes();
-    carregarUsuarios();
-    
-    document.getElementById('form-lancamento').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        await salvarLancamento();
-    });
-
-    // Calcular valor total quando valor ou parcelas mudarem
-    document.getElementById('valor').addEventListener('input', calcularValorTotal);
-    document.getElementById('parcelas').addEventListener('input', calcularValorTotal);
-});
-
-function calcularValorTotal() {
-    const valor = parseFloat(document.getElementById('valor').value) || 0;
-    const parcelas = parseInt(document.getElementById('parcelas').value) || 1;
-    const valorTotal = valor * parcelas;
-    document.getElementById('valor_total').value = valorTotal.toFixed(2);
-}
-
-async function carregarCartoes() {
-    try {
-        const cartoesRef = collection(db, 'cartoes');
-        const querySnapshot = await getDocs(cartoesRef);
-        const selectCartao = document.getElementById('cartao');
-        
-        // Limpar opções existentes (exceto a primeira)
-        selectCartao.innerHTML = '<option value="">Selecione um cartão</option>';
-        
-        querySnapshot.forEach(doc => {
-            const cartao = doc.data();
-            const option = document.createElement('option');
-            option.value = doc.id;
-            option.textContent = `${cartao.nome} - ${cartao.banco}`;
-            selectCartao.appendChild(option);
-        });
-    } catch (error) {
-        console.error("Erro ao carregar cartões:", error);
-    }
-}
-
-async function carregarUsuarios() {
-    try {
-        const usuariosRef = collection(db, 'usuarios');
-        const querySnapshot = await getDocs(usuariosRef);
-        const selectUsuario = document.getElementById('usuario');
-        
-        // Limpar opções existentes (exceto a primeira)
-        selectUsuario.innerHTML = '<option value="">Selecione quem comprou</option>';
-        
-        querySnapshot.forEach(doc => {
-            const usuario = doc.data();
-            const option = document.createElement('option');
-            option.value = doc.id;
-            option.textContent = usuario.nome;
-            selectUsuario.appendChild(option);
-        });
-    } catch (error) {
-        console.error("Erro ao carregar usuários:", error);
-    }
-}
-
-async function carregarLancamentos() {
-    try {
-        const lancamentosRef = collection(db, 'lancamentos');
-        const q = query(lancamentosRef, orderBy("data", "desc"));
-        const querySnapshot = await getDocs(q);
-        const tabela = document.getElementById('tabela-lancamentos');
-        
-        tabela.innerHTML = '';
-        
-        querySnapshot.forEach(doc => {
-            const lancamento = doc.data();
-            const row = tabela.insertRow();
+        <main>
+            <h1>Lançamentos</h1>
             
-            row.innerHTML = `
-                <td>${formatarData(lancamento.data)}</td>
-                <td><span class="badge ${lancamento.tipo}">${lancamento.tipo}</span></td>
-                <td>${lancamento.descricao}</td>
-                <td>${lancamento.categoria}</td>
-                <td>${lancamento.cartao_nome || 'N/A'}</td>
-                <td>${lancamento.usuario_nome || 'N/A'}</td>
-                <td>${lancamento.parcela_atual || 'N/A'}/${lancamento.total_parcelas || 'N/A'}</td>
-                <td>${formatarMoeda(lancamento.valor)}</td>
-                <td><small>${lancamento.id_compra || 'N/A'}</small></td>
-                <td class="acoes">
-                    <button onclick="editarLancamento('${doc.id}')" class="btn-editar">Editar</button>
-                    <button onclick="excluirLancamento('${doc.id}')" class="btn-excluir">Excluir</button>
-                </td>
-            `;
-        });
-    } catch (error) {
-        console.error("Erro ao carregar lançamentos:", error);
-    }
-}
+            <div class="card">
+                <form id="form-lancamento" class="form">
+                    <div class="form-grid">
+                        <!-- 1. Tipo (primeiro campo) -->
+                        <div class="form-group">
+                            <label for="tipo">Tipo*</label>
+                            <select id="tipo" name="tipo" class="form-control" required>
+                                <option value="">Selecione o tipo</option>
+                                <option value="receita">Receita</option>
+                                <option value="despesa">Despesa</option>
+                            </select>
+                        </div>
 
-async function salvarLancamento() {
-    try {
-        const tipo = document.getElementById('tipo').value;
-        const cartaoId = document.getElementById('cartao').value;
-        const usuarioId = document.getElementById('usuario').value;
-        const descricao = document.getElementById('descricao').value;
-        const valor = parseFloat(document.getElementById('valor').value);
-        const parcelas = parseInt(document.getElementById('parcelas').value);
-        const categoria = document.getElementById('categoria').value;
-        const data = document.getElementById('data').value;
+                        <!-- 2. Cartão (segundo campo) -->
+                        <div class="form-group">
+                            <label for="cartao">Cartão*</label>
+                            <select id="cartao" name="cartao" class="form-control" required>
+                                <option value="">Selecione um cartão</option>
+                            </select>
+                        </div>
 
-        // Buscar nome do cartão selecionado
-        const cartoesSnapshot = await getDocs(collection(db, 'cartoes'));
-        let cartaoNome = '';
-        
-        cartoesSnapshot.forEach(docCartao => {
-            if (docCartao.id === cartaoId) {
-                cartaoNome = docCartao.data().nome;
-            }
-        });
+                        <!-- 3. Quem comprou (terceiro campo) -->
+                        <div class="form-group">
+                            <label for="usuario">Quem comprou*</label>
+                            <select id="usuario" name="usuario" class="form-control" required>
+                                <option value="">Selecione quem comprou</option>
+                            </select>
+                        </div>
 
-        // Buscar nome do usuário selecionado
-        const usuariosSnapshot = await getDocs(collection(db, 'usuarios'));
-        let usuarioNome = '';
-        
-        usuariosSnapshot.forEach(docUsuario => {
-            if (docUsuario.id === usuarioId) {
-                usuarioNome = docUsuario.data().nome;
-            }
-        });
+                        <!-- 4. Descrição -->
+                        <div class="form-group form-group-full">
+                            <label for="descricao">Descrição*</label>
+                            <input type="text" id="descricao" name="descricao" class="form-control" required>
+                        </div>
 
-        // Gerar ID único para a compra
-        const idCompra = `compra_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+                        <!-- 5. Valor por parcela -->
+                        <div class="form-group">
+                            <label for="valor">Valor por parcela (R$)*</label>
+                            <input type="number" id="valor" name="valor" class="form-control" step="0.01" required>
+                        </div>
 
-        // Criar uma entrada para cada parcela
-        const promises = [];
-        
-        for (let i = 1; i <= parcelas; i++) {
-            // Calcular data de cada parcela (assumindo mensalidade)
-            const dataAtual = new Date(data);
-            dataAtual.setMonth(dataAtual.getMonth() + (i - 1));
-            const dataParcela = dataAtual.toISOString().split('T')[0];
+                        <!-- 6. Número de parcelas (lista de 1 a 12) -->
+                        <div class="form-group">
+                            <label for="parcelas">Número de parcelas*</label>
+                            <select id="parcelas" name="parcelas" class="form-control" required>
+                                <option value="1">1x (À vista)</option>
+                                <option value="2">2x</option>
+                                <option value="3">3x</option>
+                                <option value="4">4x</option>
+                                <option value="5">5x</option>
+                                <option value="6">6x</option>
+                                <option value="7">7x</option>
+                                <option value="8">8x</option>
+                                <option value="9">9x</option>
+                                <option value="10">10x</option>
+                                <option value="11">11x</option>
+                                <option value="12">12x</option>
+                            </select>
+                        </div>
 
-            const lancamentoParcela = {
-                tipo: tipo,
-                cartao_id: cartaoId,
-                cartao_nome: cartaoNome,
-                usuario_id: usuarioId,
-                usuario_nome: usuarioNome,
-                descricao: `${descricao} - Parcela ${i}/${parcelas}`,
-                valor: valor,
-                categoria: categoria,
-                data: dataParcela,
-                parcela_atual: i,
-                total_parcelas: parcelas,
-                id_compra: idCompra,
-                data_criacao: new Date().toISOString()
-            };
+                        <!-- 7. Valor total (calculado automaticamente) -->
+                        <div class="form-group">
+                            <label for="valor_total">Valor Total (R$)</label>
+                            <input type="number" id="valor_total" name="valor_total" class="form-control" step="0.01" readonly>
+                        </div>
 
-            if (lancamentoEditandoId && i === 1) {
-                // Se estiver editando, atualizar apenas a primeira parcela
-                promises.push(updateDoc(doc(db, 'lancamentos', lancamentoEditandoId), lancamentoParcela));
-            } else if (!lancamentoEditandoId) {
-                // Se for novo lançamento, adicionar todas as parcelas
-                promises.push(addDoc(collection(db, 'lancamentos'), lancamentoParcela));
-            }
-        }
+                        <!-- 8. Categoria (lista das principais) -->
+                        <div class="form-group">
+                            <label for="categoria">Categoria*</label>
+                            <select id="categoria" name="categoria" class="form-control" required>
+                                <option value="">Selecione uma categoria</option>
+                                <optgroup label="💰 Receitas">
+                                    <option value="Salário">Salário</option>
+                                    <option value="Freelance">Freelance</option>
+                                    <option value="Vendas">Vendas</option>
+                                    <option value="Investimentos">Investimentos</option>
+                                    <option value="Aluguel">Aluguel</option>
+                                    <option value="Outras Receitas">Outras Receitas</option>
+                                </optgroup>
+                                <optgroup label="🏠 Casa e Moradia">
+                                    <option value="Aluguel/Financiamento">Aluguel/Financiamento</option>
+                                    <option value="Condomínio">Condomínio</option>
+                                    <option value="Energia Elétrica">Energia Elétrica</option>
+                                    <option value="Água">Água</option>
+                                    <option value="Gás">Gás</option>
+                                    <option value="Internet">Internet</option>
+                                    <option value="Telefone">Telefone</option>
+                                </optgroup>
+                                <optgroup label="🍽️ Alimentação">
+                                    <option value="Supermercado">Supermercado</option>
+                                    <option value="Restaurante">Restaurante</option>
+                                    <option value="Lanche">Lanche</option>
+                                    <option value="Delivery">Delivery</option>
+                                </optgroup>
+                                <optgroup label="🚗 Transporte">
+                                    <option value="Combustível">Combustível</option>
+                                    <option value="Transporte Público">Transporte Público</option>
+                                    <option value="Uber/Taxi">Uber/Taxi</option>
+                                    <option value="Manutenção Veículo">Manutenção Veículo</option>
+                                    <option value="Seguro Veículo">Seguro Veículo</option>
+                                    <option value="IPVA">IPVA</option>
+                                </optgroup>
+                                <optgroup label="🏥 Saúde">
+                                    <option value="Plano de Saúde">Plano de Saúde</option>
+                                    <option value="Medicamentos">Medicamentos</option>
+                                    <option value="Consultas">Consultas</option>
+                                    <option value="Exames">Exames</option>
+                                </optgroup>
+                                <optgroup label="🎓 Educação">
+                                    <option value="Escola/Universidade">Escola/Universidade</option>
+                                    <option value="Cursos">Cursos</option>
+                                    <option value="Livros">Livros</option>
+                                    <option value="Material Escolar">Material Escolar</option>
+                                </optgroup>
+                                <optgroup label="🎮 Lazer e Entretenimento">
+                                    <option value="Cinema">Cinema</option>
+                                    <option value="Streaming">Streaming</option>
+                                    <option value="Games">Games</option>
+                                    <option value="Viagens">Viagens</option>
+                                    <option value="Academia">Academia</option>
+                                    <option value="Hobbies">Hobbies</option>
+                                </optgroup>
+                                <optgroup label="👕 Vestuário">
+                                    <option value="Roupas">Roupas</option>
+                                    <option value="Calçados">Calçados</option>
+                                    <option value="Acessórios">Acessórios</option>
+                                </optgroup>
+                                <optgroup label="💄 Cuidados Pessoais">
+                                    <option value="Cabeleireiro">Cabeleireiro</option>
+                                    <option value="Produtos de Higiene">Produtos de Higiene</option>
+                                    <option value="Cosméticos">Cosméticos</option>
+                                </optgroup>
+                                <optgroup label="📱 Tecnologia">
+                                    <option value="Eletrônicos">Eletrônicos</option>
+                                    <option value="Software">Software</option>
+                                    <option value="Aplicativos">Aplicativos</option>
+                                </optgroup>
+                                <optgroup label="🎁 Outros">
+                                    <option value="Presentes">Presentes</option>
+                                    <option value="Doações">Doações</option>
+                                    <option value="Impostos">Impostos</option>
+                                    <option value="Seguros">Seguros</option>
+                                    <option value="Taxas Bancárias">Taxas Bancárias</option>
+                                    <option value="Diversos">Diversos</option>
+                                </optgroup>
+                            </select>
+                        </div>
 
-        await Promise.all(promises);
+                        <!-- 9. Data da primeira parcela -->
+                        <div class="form-group">
+                            <label for="data">Data da primeira parcela*</label>
+                            <input type="date" id="data" name="data" class="form-control" required>
+                        </div>
+                    </div>
 
-        // Limpar formulário e recarregar tabela
-        document.getElementById('form-lancamento').reset();
-        document.getElementById('valor_total').value = '';
-        lancamentoEditandoId = null;
-        document.getElementById('btn-salvar').textContent = 'Salvar Lançamento';
-        document.getElementById('btn-cancelar').style.display = 'none';
+                    <div class="form-actions">
+                        <button type="submit" id="btn-salvar" class="btn btn-primary">Salvar Lançamento</button>
+                        <button type="button" id="btn-cancelar" class="btn btn-secondary" onclick="cancelarEdicao()" style="display: none;">Cancelar</button>
+                    </div>
+                </form>
+            </div>
 
-        await carregarLancamentos();
-        
-        alert(`Lançamento salvo com sucesso! ${parcelas} parcela(s) criada(s) para ${usuarioNome}.`);
-    } catch (error) {
-        console.error("Erro ao salvar lançamento:", error);
-        alert("Erro ao salvar lançamento: " + error.message);
-    }
-}
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Lista de Lançamentos</h2>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Tipo</th>
+                                <th>Descrição</th>
+                                <th>Categoria</th>
+                                <th>Cartão</th>
+                                <th>Usuário</th>
+                                <th>Parcela</th>
+                                <th>Valor</th>
+                                <th>ID Compra</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabela-lancamentos">
+                            <!-- Dados serão carregados via JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
 
-async function editarLancamento(id) {
-    try {
-        const lancamentoRef = doc(db, 'lancamentos', id);
-        const querySnapshot = await getDocs(collection(db, 'lancamentos'));
-        
-        querySnapshot.forEach(docLancamento => {
-            if (docLancamento.id === id) {
-                const lancamento = docLancamento.data();
-                
-                document.getElementById('tipo').value = lancamento.tipo;
-                document.getElementById('cartao').value = lancamento.cartao_id;
-                document.getElementById('usuario').value = lancamento.usuario_id;
-                document.getElementById('descricao').value = lancamento.descricao.replace(/ - Parcela \d+\/\d+$/, '');
-                document.getElementById('valor').value = lancamento.valor;
-                document.getElementById('parcelas').value = lancamento.total_parcelas || 1;
-                document.getElementById('categoria').value = lancamento.categoria;
-                document.getElementById('data').value = lancamento.data;
-                
-                calcularValorTotal();
-                
-                lancamentoEditandoId = id;
-                document.getElementById('btn-salvar').textContent = 'Atualizar Lançamento';
-                document.getElementById('btn-cancelar').style.display = 'inline-block';
-            }
-        });
-    } catch (error) {
-        console.error("Erro ao carregar lançamento para edição:", error);
-    }
-}
-
-async function excluirLancamento(id) {
-    if (confirm('Tem certeza que deseja excluir este lançamento?')) {
-        try {
-            await deleteDoc(doc(db, 'lancamentos', id));
-            await carregarLancamentos();
-            alert("Lançamento excluído com sucesso!");
-        } catch (error) {
-            console.error("Erro ao excluir lançamento:", error);
-            alert("Erro ao excluir lançamento: " + error.message);
-        }
-    }
-}
-
-function cancelarEdicao() {
-    document.getElementById('form-lancamento').reset();
-    document.getElementById('valor_total').value = '';
-    lancamentoEditandoId = null;
-    document.getElementById('btn-salvar').textContent = 'Salvar Lançamento';
-    document.getElementById('btn-cancelar').style.display = 'none';
-}
-
-function formatarMoeda(valor) {
-    return new Intl.NumberFormat('pt-BR', {
-        style: 'currency',
-        currency: 'BRL'
-    }).format(valor);
-}
-
-function formatarData(data) {
-    return new Date(data + 'T00:00:00').toLocaleDateString('pt-BR');
-}
-
-// Tornar funções globais para uso nos botões HTML
-window.editarLancamento = editarLancamento;
-window.excluirLancamento = excluirLancamento;
-window.cancelarEdicao = cancelarEdicao;
+    <script type="module" src="js/lancamentos.js"></script>
+</body>
+</html>
