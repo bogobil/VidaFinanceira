@@ -19,16 +19,32 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 function showLoading() {
-  document.getElementById('loading-message').style.display = 'flex';
+  const loadingMessage = document.getElementById('loading-message');
+  if (loadingMessage) {
+    loadingMessage.style.display = 'flex';
+    loadingMessage.classList.add('apple-spinner');
+  }
+  
   document.querySelectorAll('.card-loading').forEach(el => {
-    el.style.display = 'flex';
+    if (el) {
+      el.style.display = 'flex';
+      el.classList.add('card-pulse');
+    }
   });
 }
 
 function hideLoading() {
-  document.getElementById('loading-message').style.display = 'none';
+  const loadingMessage = document.getElementById('loading-message');
+  if (loadingMessage) {
+    loadingMessage.style.display = 'none';
+    loadingMessage.classList.remove('apple-spinner');
+  }
+  
   document.querySelectorAll('.card-loading').forEach(el => {
-    el.style.display = 'none';
+    if (el) {
+      el.style.display = 'none';
+      el.classList.remove('card-pulse');
+    }
   });
 }
 

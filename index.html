@@ -4,14 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Dashboard do aplicativo Vida Financeira - Controle suas finanças pessoais">
-  <meta name="theme-color" content="#4CAF50">
+  <meta name="theme-color" content="#007AFF">
   <title>Dashboard - Vida Financeira</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
   <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/apple-animations.css">
+  <link rel="stylesheet" href="css/mobile-optimizations.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body class="light-theme">
   <header class="shadow-sm sticky-top bg-body">
@@ -146,22 +148,41 @@
   </footer>
 
   <!-- Scripts -->
+  <!-- Floating Action Button -->
+  <button class="floating-action-btn ripple-effect" id="floating-add" title="Adicionar Lançamento">
+    <i class="fas fa-plus"></i>
+  </button>
+
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/apple-interactions.js"></script>
   <script type="module" src="js/firebase-config.js"></script>
   <script type="module" src="js/dashboard.js"></script>
   
   <script>
-    // Funcionalidade do botão de tema
+    // Funcionalidade do botão de tema com animações Apple-like
     document.addEventListener('DOMContentLoaded', function() {
       const themeToggle = document.getElementById('theme-toggle');
       const body = document.body;
+      const floatingBtn = document.getElementById('floating-add');
       
       // Verificar tema salvo
       const savedTheme = localStorage.getItem('theme') || 'light-theme';
       body.className = savedTheme;
       updateThemeButton(savedTheme);
       
+      // Animação de entrada da página
+      document.body.classList.add('page-enter');
+      
+      // Floating Action Button
+      floatingBtn.addEventListener('click', function() {
+        this.classList.add('btn-press');
+        setTimeout(() => this.classList.remove('btn-press'), 300);
+        window.location.href = 'lancamentos.html';
+      });
+      
       themeToggle.addEventListener('click', function() {
+        this.classList.add('ripple-effect');
+        
         if (body.classList.contains('light-theme')) {
           body.classList.replace('light-theme', 'dark-theme');
           localStorage.setItem('theme', 'dark-theme');
@@ -171,6 +192,8 @@
           localStorage.setItem('theme', 'light-theme');
           updateThemeButton('light-theme');
         }
+        
+        setTimeout(() => this.classList.remove('ripple-effect'), 600);
       });
       
       function updateThemeButton(theme) {
@@ -182,6 +205,19 @@
           themeToggle.classList.replace('btn-outline-light', 'btn-outline-secondary');
         }
       }
+      
+      // Adicionar animações aos cards quando aparecem
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('card-appear');
+          }
+        });
+      }, { threshold: 0.1 });
+      
+      document.querySelectorAll('.card').forEach(card => {
+        observer.observe(card);
+      });
     });
   </script>
 </body>

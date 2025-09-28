@@ -1,0 +1,308 @@
+/* Mobile Premium Optimizations - Apple-like Experience */
+
+/* Touch-friendly interactions */
+@media (max-width: 768px) {
+  /* Increase touch targets */
+  .btn {
+    min-height: 44px;
+    padding: 12px 20px;
+  }
+  
+  .nav-link {
+    padding: 16px 20px;
+    font-size: 16px;
+  }
+  
+  /* Improved form controls */
+  .form-control {
+    min-height: 44px;
+    font-size: 16px; /* Prevents zoom on iOS */
+    padding: 12px 16px;
+  }
+  
+  .form-select {
+    min-height: 44px;
+    font-size: 16px;
+    padding: 12px 16px;
+  }
+  
+  /* Card optimizations */
+  .card {
+    margin-bottom: 16px;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  }
+  
+  .card-body {
+    padding: 20px;
+  }
+  
+  /* Table improvements */
+  .table-responsive {
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  
+  .table td, .table th {
+    padding: 16px 12px;
+    vertical-align: middle;
+  }
+  
+  /* Navigation improvements */
+  .navbar-toggler {
+    border: none;
+    padding: 8px;
+    border-radius: 8px;
+  }
+  
+  .navbar-collapse {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-color);
+  }
+  
+  /* Floating action button mobile */
+  .floating-action-btn {
+    bottom: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    font-size: 20px;
+  }
+  
+  /* Modal improvements */
+  .modal-dialog {
+    margin: 16px;
+  }
+  
+  .modal-content {
+    border-radius: 16px;
+    border: none;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  }
+  
+  .modal-header {
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid var(--border-color);
+  }
+  
+  .modal-body {
+    padding: 20px 24px;
+  }
+  
+  .modal-footer {
+    padding: 16px 24px 20px;
+    border-top: 1px solid var(--border-color);
+  }
+}
+
+/* iPhone X and newer safe areas */
+@supports (padding: max(0px)) {
+  .navbar {
+    padding-left: max(16px, env(safe-area-inset-left));
+    padding-right: max(16px, env(safe-area-inset-right));
+  }
+  
+  .container {
+    padding-left: max(16px, env(safe-area-inset-left));
+    padding-right: max(16px, env(safe-area-inset-right));
+  }
+  
+  .floating-action-btn {
+    bottom: max(20px, env(safe-area-inset-bottom));
+    right: max(20px, env(safe-area-inset-right));
+  }
+}
+
+/* Landscape mode optimizations */
+@media (max-width: 768px) and (orientation: landscape) {
+  .navbar {
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+  
+  .navbar-brand {
+    font-size: 1.1rem;
+  }
+  
+  .card {
+    margin-bottom: 12px;
+  }
+  
+  .floating-action-btn {
+    width: 48px;
+    height: 48px;
+    font-size: 18px;
+  }
+}
+
+/* Dark theme mobile adjustments */
+body.dark-theme {
+  @media (max-width: 768px) {
+    .navbar-collapse {
+      border-top-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    .modal-content {
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+    }
+    
+    .modal-header,
+    .modal-footer {
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+  }
+}
+
+/* Swipe gestures preparation */
+.swipe-container {
+  touch-action: pan-x;
+  overflow-x: hidden;
+}
+
+.swipe-item {
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Pull to refresh indicator */
+.pull-to-refresh {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%) translateY(-100%);
+  background: var(--bg-primary);
+  padding: 12px 24px;
+  border-radius: 0 0 12px 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  z-index: 1001;
+}
+
+.pull-to-refresh.active {
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Loading states for mobile */
+.mobile-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  flex-direction: column;
+}
+
+.mobile-loading .apple-spinner {
+  width: 32px;
+  height: 32px;
+  margin-bottom: 16px;
+}
+
+.mobile-loading-text {
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+/* Haptic feedback simulation */
+@keyframes hapticFeedback {
+  0% { transform: scale(1); }
+  50% { transform: scale(0.98); }
+  100% { transform: scale(1); }
+}
+
+.haptic-light {
+  animation: hapticFeedback 0.1s ease-out;
+}
+
+/* iOS-style list items */
+.list-group-item {
+  border-left: none;
+  border-right: none;
+  padding: 16px 20px;
+  background: var(--bg-primary);
+  border-color: var(--border-color);
+}
+
+.list-group-item:first-child {
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+}
+
+.list-group-item:last-child {
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.list-group-item:hover {
+  background: var(--bg-hover);
+}
+
+/* Financial app specific mobile optimizations */
+.transaction-item {
+  padding: 16px;
+  border-radius: 12px;
+  margin-bottom: 8px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  transition: all 0.2s ease;
+}
+
+.transaction-item:active {
+  transform: scale(0.98);
+  background: var(--bg-hover);
+}
+
+.transaction-amount {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.transaction-description {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+.transaction-date {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* Quick action buttons */
+.quick-actions {
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.quick-action-btn {
+  min-width: 80px;
+  height: 80px;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--primary);
+  color: white;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 500;
+  box-shadow: 0 4px 16px rgba(0, 122, 255, 0.3);
+  transition: all 0.2s ease;
+}
+
+.quick-action-btn:hover,
+.quick-action-btn:active {
+  transform: scale(0.95);
+  color: white;
+}
+
+.quick-action-btn i {
+  font-size: 24px;
+  margin-bottom: 4px;
+}
